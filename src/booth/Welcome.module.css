@@ -34,6 +34,7 @@
 
 .brandHeader {
   position: absolute;
+  z-index: 10;
   inset-block-start: 0;
   inset-inline-start: calc(var(--stage-gutter) - 1.5cqi);
 }
@@ -46,6 +47,7 @@
 
 .bill {
   position: absolute;
+  z-index: 10;
   inset: 31% var(--stage-gutter) auto;
   animation: arrive 950ms cubic-bezier(.2,.7,.18,1) both;
 }
@@ -122,27 +124,31 @@
 }
 
 .disc {
-  --art: url("/cd-welcome.png");
+  --art: url("/artwork/web/welcome-cd-violet.png");
+  --disc-glow: 150 107 252;
+  --disc-shimmer: 195 74 255;
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: center / cover no-repeat var(--art);
   z-index: 5;
-  filter: drop-shadow(0 0 18px rgba(150, 107, 252, 0.35));
+  filter: drop-shadow(0 0 18px rgb(var(--disc-glow) / .35));
   animation: disc-shimmer 7s ease-in-out infinite alternate;
 }
 
 :global([data-theme="orange"]) .disc {
-  filter: drop-shadow(0 0 22px rgba(228, 141, 61, 0.5));
+  --art: url("/artwork/web/welcome-cd-amber.png");
+  --disc-glow: 228 141 61;
+  --disc-shimmer: 232 164 64;
 }
 
 @keyframes disc-shimmer {
   0% {
-    filter: drop-shadow(0 0 14px rgba(150, 107, 252, 0.3));
+    filter: drop-shadow(0 0 14px rgb(var(--disc-glow) / .3));
     transform: scale(1);
   }
   100% {
-    filter: drop-shadow(0 0 28px rgba(195, 74, 255, 0.55));
+    filter: drop-shadow(0 0 28px rgb(var(--disc-shimmer) / .55));
     transform: scale(1.012);
   }
 }

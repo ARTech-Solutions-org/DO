@@ -11,7 +11,7 @@ import type { GenerationRequest } from "../../../../../server/ports";
 type Context = { params: Promise<{ jobId: string; resource?: string[] }> };
 const json = (value: unknown, status = 200) => Response.json(value, { status, headers: privateHeaders });
 const error = (status: number) => json({ error: "Booth request unavailable." }, status);
-export const maxDuration = 310;
+export const maxDuration = 60;
 
 async function handle(request: Request, context: Context) {
   try {

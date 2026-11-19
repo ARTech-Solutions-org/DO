@@ -6,16 +6,9 @@ import styles from "./Welcome.module.css";
 
 export function OperatorHotspot({ artwork = false }: { artwork?: boolean }) {
   const taps = useRef<number[]>([]);
-  const lastTapTime = useRef<number>(0);
 
-  function registerTap(e?: React.SyntheticEvent | Event) {
-    if (e && "stopPropagation" in e) {
-      e.stopPropagation();
-    }
-    const now = Date.now();
-    // Allow rapid human taps (>60ms apart), discard duplicate pointerdown+click in same gesture
-    if (now - lastTapTime.current < 60) return;
-    lastTapTime.current = now;
+  function registerTap() {
+    const now = performance.now();
 
     try {
       navigator.vibrate?.(35);
@@ -39,12 +32,10 @@ export function OperatorHotspot({ artwork = false }: { artwork?: boolean }) {
       id={artwork ? "operator-artwork-hotspot" : "operator-theme-hotspot"}
       aria-label={artwork ? "Switch Welcome artwork" : "Operator theme control"}
       className={artwork ? styles.artworkHotspot : styles.hotspot}
-      onPointerDown={registerTap}
       onClick={registerTap}
       onKeyDown={event => {
-        if (event.key === "Enter" || event.key === " ") {
+        if (event.repeat && (event.key === "Enter" || event.key === " ")) {
           event.preventDefault();
-          registerTap();
         }
       }}
     />
