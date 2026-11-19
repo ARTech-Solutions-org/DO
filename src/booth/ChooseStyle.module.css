@@ -28,24 +28,24 @@
 }
 
 .catalog {
-  display: flex;
-  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   box-sizing: border-box;
-  width: 100%;
-  min-inline-size: 0;
-  flex-wrap: wrap;
+  width: min(100%, 94cqi);
+  max-width: 780px;
   align-content: center;
+  align-items: center;
   justify-content: center;
-  gap: max(1rem, 3cqi);
-  margin: 0;
-  padding: max(1rem, 4cqi) 0;
+  gap: clamp(10px, 2.8cqi, 28px);
+  margin: 0 auto;
+  padding: clamp(0.6rem, 2cqi, 1.5rem) 0;
   border: 0;
+  flex: 1;
 }
 
 .option {
   position: relative;
-  width: min(100%, 72cqi);
-  max-width: 440px;
+  width: 100%;
   animation: reveal 350ms ease-out both;
 }
 
@@ -79,23 +79,23 @@
 
 .caption {
   display: grid;
-  gap: .22em;
-  padding: max(.55rem, 1.7cqi) max(.8rem, 2.8cqi);
+  gap: .15em;
+  padding: clamp(0.45rem, 1.4cqi, 0.9rem) clamp(0.55rem, 1.8cqi, 1.1rem);
 }
 
 .name {
-  font: 700 max(1.5rem, 5.2cqi)/1 var(--font-display);
+  font: 700 clamp(0.95rem, 2.9cqi, 1.45rem)/1.15 var(--font-display);
   letter-spacing: .02em;
   text-transform: uppercase;
 }
 
-.sample { color: var(--text-secondary); font-size: max(.75rem, 1.85cqi); }
+.sample { color: var(--text-secondary); font-size: clamp(0.68rem, 1.6cqi, 0.85rem); }
 
 .indicator {
   position: absolute;
-  inset: max(.55rem, 1.7cqi) max(.55rem, 1.7cqi) auto auto;
+  inset: clamp(0.45rem, 1.4cqi, 0.75rem) clamp(0.45rem, 1.4cqi, 0.75rem) auto auto;
   display: grid;
-  width: max(1.55rem, 4.3cqi);
+  width: clamp(1.3rem, 3.2cqi, 1.8rem);
   aspect-ratio: 1;
   place-items: center;
   border: 1px solid var(--selected, #d3baff);
