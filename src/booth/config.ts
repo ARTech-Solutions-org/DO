@@ -14,17 +14,30 @@ interface BoothConfig {
 
 export const boothConfig = {
   display: { width: 1080, height: 1920, confirmed: false },
-  styles: [{
-    id: "caricature",
-    label: "Caricature",
-    enabled: true,
-    sample: {
-      full: "/artwork/web/caricature-sample-full.webp",
-      compact: "/artwork/web/caricature-sample-compact.webp",
-      width: 1195,
-      height: 1316,
+  styles: [
+    {
+      id: "caricature",
+      label: "Caricature",
+      enabled: true,
+      sample: {
+        full: "/artwork/web/caricature-sample-full.webp",
+        compact: "/artwork/web/caricature-sample-compact.webp",
+        width: 1195,
+        height: 1316,
+      },
     },
-  }],
+    {
+      id: "lidar",
+      label: "LiDAR Scan",
+      enabled: true,
+      sample: {
+        full: "/artwork/web/lidar-sample-full.webp",
+        compact: "/artwork/web/lidar-sample-compact.webp",
+        width: 1195,
+        height: 1316,
+      },
+    },
+  ],
   theme: { portraitBackground: "#966BFC", ink: "#000000", paper: "#FFFFFF", accent: "#E48D3D" },
   countdownSeconds: 3,
   qrIdleSeconds: 60,

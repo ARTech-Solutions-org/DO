@@ -15,7 +15,10 @@ export async function preparePortrait(photo: Blob) {
     fit: "inside", withoutEnlargement: true }).toColourspace("srgb").jpeg({ quality: 90 }).toBuffer();
 }
 
-export async function compositePortrait(layer: Buffer): Promise<Blob> {
+export async function compositePortrait(
+  layer: Buffer,
+  background: readonly [number, number, number] = purple
+): Promise<Blob> {
   if (layer.length > 16 * 1024 * 1024) throw new Error("Oversized provider image.");
   const input = sharp(layer, { limitInputPixels: outputSize * outputSize });
   const meta = await input.metadata();
@@ -36,7 +39,7 @@ export async function compositePortrait(layer: Buffer): Promise<Blob> {
       throw new Error("Expected transparent padding around the subject.");
     }
     for (let c = 0; c < 3; c++) {
-      rgb[p * 3 + c] = Math.round((rgba[p * 4 + c] * alpha + purple[c] * (255 - alpha)) / 255);
+      rgb[p * 3 + c] = Math.round((rgba[p * 4 + c] * alpha + background[c] * (255 - alpha)) / 255);
     }
   }
   if (clear < pixels * 0.1 || solid < pixels * 0.02) throw new Error("Insufficient subject or background in matte.");

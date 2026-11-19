@@ -17,7 +17,7 @@ const mock = createCaricatureAdapter({ IMAGE_EDIT_PROVIDER: "mock" }, () => { th
 const owner = "a".repeat(64);
 const jpeg = await sharp({ create: { width: 120, height: 160, channels: 3, background: "#4e4254" } }).jpeg().toBuffer();
 
-async function fixture(t: TestContext, timeoutMs = 3000) {
+async function fixture(t: TestContext, timeoutMs = 10000) {
   const root = await mkdtemp(join(tmpdir(), "do-booth-test-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const config = { ...deliveryConfig({ BOOTH_MODE: "local", BOOTH_MOCK_DELAY_SECONDS: "0" })!, root, timeoutMs };

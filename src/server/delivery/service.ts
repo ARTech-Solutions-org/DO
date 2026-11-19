@@ -8,7 +8,7 @@ import { exportPortrait, type Artifact, type ExportFormat } from "./export.ts";
 import { cleanupExpired, jobPath, join, mkdir, publish, read, readFile, validId } from "./store.ts";
 
 type Claim = {
-  id: string; sessionId: string; ownerHash: string; inputHash: string; styleId: "caricature";
+  id: string; sessionId: string; ownerHash: string; inputHash: string; styleId: "caricature" | "lidar";
   createdAt: number; expiresAt: number; deadline: number; mock: boolean; format: ExportFormat;
 };
 type Success = { status: "SUCCEEDED"; at: number; artifact: Artifact };
@@ -81,7 +81,7 @@ export function delivery(config: DeliveryConfig, hooks: {
   async function claim(request: GenerationRequest, owner: string, consentAt: number) {
     const now = clock();
     if (!validId(request.captureId) || !validId(request.sessionId) || !validOwner(owner) ||
-      request.styleId !== "caricature" || !Number.isFinite(consentAt) || consentAt > now + 60_000 ||
+      (request.styleId !== "caricature" && request.styleId !== "lidar") || !Number.isFinite(consentAt) || consentAt > now + 60_000 ||
       consentAt + config.ttlMs <= now || request.photo.type !== "image/jpeg" ||
       !request.photo.size || request.photo.size > 16 * 1024 * 1024) throw new Error("Invalid capture.");
     const bytes = new Uint8Array(await request.photo.arrayBuffer());

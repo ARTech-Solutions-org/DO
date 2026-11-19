@@ -4,14 +4,27 @@ import { mockSubjectLayer } from "./mock.ts";
 import { compositePortrait, preparePortrait } from "./portrait.ts";
 
 export function promptForStyle(style: string) {
-  if (style !== "caricature") throw new Error("Unsupported portrait style.");
-  return [
-    "Illustrate the person in the supplied photograph as a flattering editorial caricature.",
-    "Build the exaggeration from their own features and expression. Retain their complexion, hair texture, clothing and headwear, including the coverage visible in the photograph.",
-    "Keep the full head and shoulders within the square, with generous clear padding on every side.",
-    "Render only the subject on transparent pixels, ready for placement on a flat #966BFC purple background. Preserve soft hair strands with clean alpha and natural edge colors.",
-    "Omit scenery, cast shadows on the backdrop, colored spill, lettering, logos and additional people.",
-  ].join(" ");
+  if (style === "caricature") {
+    return [
+      "Illustrate the person in the supplied photograph as a flattering editorial caricature.",
+      "Build the exaggeration from their own features and expression. Retain their complexion, hair texture, clothing and headwear, including the coverage visible in the photograph.",
+      "Keep the full head and shoulders within the square, with generous clear padding on every side.",
+      "Render only the subject on transparent pixels, ready for placement on a flat #966BFC purple background. Preserve soft hair strands with clean alpha and natural edge colors.",
+      "Omit scenery, cast shadows on the backdrop, colored spill, lettering, logos and additional people.",
+    ].join(" ");
+  }
+  if (style === "lidar") {
+    return [
+      "Transform the uploaded photograph into a pure high-density scientific LiDAR point-cloud visualization in 4:5 vertical portrait composition.",
+      "Abandon photographic surfaces entirely: no skin texture, no continuous meshes, no smooth shading, and no solid forms.",
+      "Reconstruct the subject exclusively as thousands of separate glowing laser-return points suspended in space with clearly visible black gaps between them.",
+      "Preserve the subject's exact facial features, proportions, expression, spatial relationships, and head-and-shoulders composition with generous clear padding on all sides.",
+      "Color every point by spatial depth using a vibrant branded palette: electric ultraviolet and neon purple (#966BFC and #C34AFF) on near-field laser returns, transitioning through magenta into incandescent amber and warm gold (#FFB044 and #E48D3D) on far-field depth returns.",
+      "Scanner origin and radial sweep geometry should produce clean laser trajectories and realistic occlusion shadows.",
+      "Render only the discrete point-cloud returns on transparent pixels, ready for placement on pure deep void black space (#05040A), with no background scenery, no fog, no bloom-heavy haze, and no outer edge contact.",
+    ].join(" ");
+  }
+  throw new Error("Unsupported portrait style.");
 }
 
 type Settings = { IMAGE_EDIT_PROVIDER?: string; IMAGE_EDIT_MODEL?: string; IMAGE_EDIT_API_KEY?: string };
@@ -34,8 +47,9 @@ export function createCaricatureAdapter(settings: Settings = {
     async edit(request, signal) {
       const prompt = promptForStyle(request.styleId);
       const portrait = await preparePortrait(request.photo);
+      const bg = request.styleId === "lidar" ? ([5, 4, 10] as const) : ([150, 107, 252] as const);
       signal?.throwIfAborted();
-      if (provider === "mock") return compositePortrait(await mockSubjectLayer());
+      if (provider === "mock") return compositePortrait(await mockSubjectLayer(), bg);
       const response = await send("https://api.openai.com/v1/images/edits", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -54,12 +68,12 @@ export function createCaricatureAdapter(settings: Settings = {
         const dl = await send(data[0].url);
         if (!dl.ok) throw new Error("Failed to download image from provider URL.");
         const ab = await dl.arrayBuffer();
-        return compositePortrait(Buffer.from(ab));
+        return compositePortrait(Buffer.from(ab), bg);
       }
       if (data?.length !== 1 || typeof encoded !== "string" || !encoded || encoded.length > 23_000_000) {
         throw new Error("Expected one encoded image from the edit provider.");
       }
-      return compositePortrait(Buffer.from(encoded, "base64"));
+      return compositePortrait(Buffer.from(encoded, "base64"), bg);
     },
   };
 }

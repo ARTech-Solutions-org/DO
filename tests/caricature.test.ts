@@ -18,6 +18,8 @@ async function fixture() {
 test("selects the approved prompt and rejects unsupported styles and providers", () => {
   const prompt = promptForStyle("caricature");
   for (const term of ["complexion", "headwear", "transparent", "#966BFC"]) assert.ok(prompt.includes(term));
+  const lidar = promptForStyle("lidar");
+  for (const term of ["LiDAR", "laser-return", "transparent", "#966BFC", "#FFB044"]) assert.ok(lidar.includes(term));
   assert.throws(() => promptForStyle("glam"));
   assert.throws(() => createCaricatureAdapter({ IMAGE_EDIT_PROVIDER: "unknown" }));
   assert.throws(() => createCaricatureAdapter({ IMAGE_EDIT_PROVIDER: "openai", IMAGE_EDIT_MODEL: "unknown", IMAGE_EDIT_API_KEY: "fixture" }));

@@ -6,7 +6,7 @@ const pointer = "booth-attempt";
 export function attemptPointer(): Attempt | null {
   try {
     const value = JSON.parse(sessionStorage.getItem(pointer) || "null") as Attempt | null;
-    return value && typeof value.jobId === "string" && typeof value.owner === "string" && value.styleId === "caricature" ? value : null;
+    return value && typeof value.jobId === "string" && typeof value.owner === "string" && (value.styleId === "caricature" || value.styleId === "lidar") ? value : null;
   } catch { return null; }
 }
 

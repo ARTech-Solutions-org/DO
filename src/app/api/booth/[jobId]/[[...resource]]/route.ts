@@ -34,7 +34,7 @@ async function handle(request: Request, context: Context) {
       const photo = await readCapture(request);
       if (!photo) return error(400);
       const styleId = request.headers.get("x-booth-style");
-      if (styleId !== "caricature") return error(400);
+      if (styleId !== "caricature" && styleId !== "lidar") return error(400);
       const capture: GenerationRequest = { sessionId: request.headers.get("x-booth-session") || "",
         captureId: jobId, styleId, photo };
       let claim;

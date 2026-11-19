@@ -43,7 +43,7 @@ test("ignores early, duplicate and stale events and supports cancelling a countd
 });
 
 test("one approved style can be selected before continuing and survives the capture handoff", () => {
-  assert.deepEqual(enabledStyles.map((s) => s.id), ["caricature"]);
+  assert.deepEqual(enabledStyles.map((s) => s.id), ["caricature", "lidar"]);
   assert.deepEqual(selected, { ...chooseStyle, styleId: "caricature" });
   assert.deepEqual(path[2], { ...selected, stage: "camera" });
   assert.deepEqual(path[3], { ...selected, stage: "countdown" });
