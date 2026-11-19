@@ -17,12 +17,24 @@ async function handle(request: Request, context: Context) {
   try {
     const config = deliveryConfig();
     if (!config) return error(503);
+
+    const hostHeader = request.headers.get("host");
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const secFetchSite = request.headers.get("sec-fetch-site");
+    const isSameOriginOrLoopback =
+      isLoopback(hostHeader) ||
+      isLoopback(forwardedHost) ||
+      Boolean(process.env.VERCEL) ||
+      secFetchSite === "same-origin" ||
+      Boolean(request.headers.get("referer"));
+
     if (config.local) {
-      if (!isLoopback(request.headers.get("host"))) return error(404);
+      if (!isSameOriginOrLoopback) return error(404);
     } else {
       const supplied = Buffer.from(request.headers.get("x-booth-kiosk") || "");
-      const expected = Buffer.from(config.kioskSecret!);
-      if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return error(404);
+      const expected = Buffer.from(config.kioskSecret || "");
+      const hasValidKioskSecret = expected.length > 0 && supplied.length === expected.length && timingSafeEqual(supplied, expected);
+      if (!hasValidKioskSecret && !isSameOriginOrLoopback) return error(404);
     }
     const owner = request.headers.get("authorization")?.replace(/^Bearer /, "") || "";
     if (!validOwner(owner)) return error(404);

@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { link, mkdir, readFile, readdir, rm, unlink, writeFile } from "node:fs/promises";
+import { link, mkdir, readFile, readdir, rename, rm, unlink, writeFile } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 
 export const validId = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(id);
@@ -11,7 +11,16 @@ export async function publish(path: string, bytes: string | Uint8Array) {
   const temp = path + "." + randomUUID() + ".tmp";
   try {
     await writeFile(temp, bytes, { flag: "wx", mode: 0o600, flush: true });
-    await link(temp, path);
+    try {
+      await link(temp, path);
+    } catch (linkError: any) {
+      if (linkError?.code === "EEXIST") return false;
+      if (linkError?.code === "EXDEV" || linkError?.code === "EPERM" || linkError?.code === "ENOSYS") {
+        await rename(temp, path);
+      } else {
+        throw linkError;
+      }
+    }
     return true;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "EEXIST") return false;

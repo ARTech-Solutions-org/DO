@@ -43,7 +43,7 @@ export function deliveryConfig(env: Readonly<Record<string, string | undefined>>
       hour: seconds(env.RATE_LIMIT_PER_HOUR, 60, 1, 10000),
     } : null,
     origin: local ? null : publicOrigin(env.BOOTH_PUBLIC_ORIGIN!),
-    root: resolve(env.BOOTH_DATA_DIR || "guest-data"),
+    root: resolve(env.BOOTH_DATA_DIR || (process.env.VERCEL ? "/tmp/guest-data" : "guest-data")),
     kioskSecret: env.BOOTH_KIOSK_SECRET,
     tokenSecret: env.BOOTH_TOKEN_SECRET,
     format,

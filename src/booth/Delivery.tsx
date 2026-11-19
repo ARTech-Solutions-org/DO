@@ -47,14 +47,13 @@ export function Delivery({ state, attempt, dispatch, reset }: {
     const fail = (reason: FailureReason) => {
       if (!signal.aborted) dispatch({ type: "fail", reason });
     };
-    const request = (resource: string, options: RequestInit = {}, milliseconds = 8_000) =>
+    const request = (resource: string, options: RequestInit = {}, milliseconds = 15_000) =>
       fetch(endpoint + resource, { ...options, headers: { ...headers, ...options.headers },
         signal: AbortSignal.any([signal, AbortSignal.timeout(milliseconds)]) });
     async function poll() {
       let misses = 0;
       while (!signal.aborted) {
         try {
-          if (!navigator.onLine) { fail("offline"); return; }
           let response = await request("");
           if (response.status === 404) {
             const capture = await readCapture(jobId);
@@ -62,7 +61,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
             response = await request("", { method: "POST", body: capture, headers: {
               "Content-Type": "image/jpeg", "X-Booth-Session": sessionId,
               "X-Booth-Consent": consentAt, "X-Booth-Style": styleId,
-            } }, 20_000);
+            } }, 45_000);
           }
           if (response.status === 400 || response.status === 409) {
             fail("capture-missing");
@@ -72,11 +71,11 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           const current = await response.json() as JobStatus;
           if (signal.aborted) return;
           setMock(current.mock);
-          void forgetCapture(jobId);
           if (current.status === "SUCCEEDED") {
+            void forgetCapture(jobId);
             if (styleId === "caricature" && canvasRef.current) {
               try {
-                const photoRes = await request("/portrait");
+                const photoRes = await request("/portrait", {}, 20_000);
                 if (photoRes.ok) {
                   const blob = await photoRes.blob();
                   const url = URL.createObjectURL(blob);
@@ -109,13 +108,15 @@ export function Delivery({ state, attempt, dispatch, reset }: {
             return;
           }
           if (current.status === "FAILED" || current.status === "TIMED_OUT") {
+            void forgetCapture(jobId);
             fail(current.rateLimited ? "rate-limit" : current.canRecover ? "export" :
               current.status === "TIMED_OUT" ? "generation-timeout" : "generation");
             return;
           }
           misses = 0;
-        } catch {
-          if (++misses >= 4) {
+        } catch (err) {
+          console.warn("Booth polling retry:", err);
+          if (++misses >= 30) {
             fail("offline");
             return;
           }
@@ -129,42 +130,59 @@ export function Delivery({ state, attempt, dispatch, reset }: {
       }
     }
     async function getLink() {
-      try {
-        if (!navigator.onLine) { fail("offline"); return; }
-        const response = await request("/link", { method: "POST" });
-        if (response.status === 404 || response.status === 410) { fail("link-expired"); return; }
-        if (!response.ok) { fail("link"); return; }
-        const value = await response.json() as Link;
-        if (signal.aborted) return;
-        if (!value.url || !Number.isFinite(value.idleSeconds)) { fail("link"); return; }
-        const lifetime = value.expiresAt === undefined ? Infinity : value.expiresAt - Date.now();
-        if (lifetime <= 0) { fail("link-expired"); return; }
-        setLink(value);
-        // Keep screen active until guest explicitly taps DONE or START OVER
-      } catch { fail(navigator.onLine ? "link" : "offline"); }
+      let attempts = 0;
+      while (!signal.aborted) {
+        try {
+          const response = await request("/link", { method: "POST" }, 15_000);
+          if (response.status === 404 || response.status === 410) { fail("link-expired"); return; }
+          if (!response.ok) throw new Error("Link fetch failed");
+          const value = await response.json() as Link;
+          if (signal.aborted) return;
+          if (!value.url || !Number.isFinite(value.idleSeconds)) { fail("link"); return; }
+          const lifetime = value.expiresAt === undefined ? Infinity : value.expiresAt - Date.now();
+          if (lifetime <= 0) { fail("link-expired"); return; }
+          setLink(value);
+          return;
+        } catch {
+          if (++attempts >= 3) {
+            fail("link");
+            return;
+          }
+          await new Promise(r => setTimeout(r, 800));
+        }
+      }
     }
     async function getPhoto() {
-      try {
-        if (!navigator.onLine) { fail("offline"); return; }
-        const response = await request("/portrait");
-        if (!response.ok) throw new Error("Photo unavailable.");
-        const blob = await response.blob();
-        if (signal.aborted) return;
-        objectUrl = URL.createObjectURL(blob);
-        setPhoto(objectUrl);
-        // Trigger punch animation & bouncing photo on secondary display
-        const photoPath = `/api/display/photo?t=${Date.now()}`;
-        fetch("/api/display", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "photo", photoUrl: photoPath, jobId }),
-        }).catch(() => {});
+      let attempts = 0;
+      while (!signal.aborted) {
         try {
-          const bc = new BroadcastChannel("do_booth_display");
-          bc.postMessage({ status: "photo", photoUrl: photoPath, jobId });
-          bc.close();
-        } catch {}
-      } catch { fail(navigator.onLine ? "result" : "offline"); }
+          const response = await request("/portrait", {}, 20_000);
+          if (!response.ok) throw new Error("Photo unavailable.");
+          const blob = await response.blob();
+          if (signal.aborted) return;
+          objectUrl = URL.createObjectURL(blob);
+          setPhoto(objectUrl);
+          // Trigger punch animation & bouncing photo on secondary display
+          const photoPath = `/api/display/photo?t=${Date.now()}`;
+          fetch("/api/display", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "photo", photoUrl: photoPath, jobId }),
+          }).catch(() => {});
+          try {
+            const bc = new BroadcastChannel("do_booth_display");
+            bc.postMessage({ status: "photo", photoUrl: photoPath, jobId });
+            bc.close();
+          } catch {}
+          return;
+        } catch {
+          if (++attempts >= 3) {
+            fail("result");
+            return;
+          }
+          await new Promise(r => setTimeout(r, 800));
+        }
+      }
     }
     if (stage === "processing") void poll();
     if (stage === "result") void getPhoto();
