@@ -20,9 +20,19 @@ export async function compositePortrait(
   background: readonly [number, number, number] = purple
 ): Promise<Blob> {
   if (layer.length > 16 * 1024 * 1024) throw new Error("Oversized provider image.");
-  const input = sharp(layer, { limitInputPixels: outputSize * outputSize });
+  const input = sharp(layer, { limitInputPixels: 32_000_000 });
   const meta = await input.metadata();
-  if (meta.format !== "png" || !meta.hasAlpha || (meta.pages ?? 1) !== 1 ||
+
+  if (!meta.hasAlpha) {
+    const png = await input
+      .resize(outputSize, outputSize, { fit: "cover" })
+      .toColourspace("srgb")
+      .png({ quality: 90 })
+      .toBuffer();
+    return new Blob([new Uint8Array(png)], { type: "image/png" });
+  }
+
+  if (meta.format !== "png" || (meta.pages ?? 1) !== 1 ||
       meta.width !== outputSize || meta.height !== outputSize) {
     throw new Error("Expected one 1024-square transparent PNG.");
   }

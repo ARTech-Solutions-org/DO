@@ -48,6 +48,22 @@
   animation: spin 15s linear infinite;
 }
 .sub { margin: 0 0 2cqi; text-align: center; color: var(--text-secondary); font: 600 max(.8rem, 2cqi)/1.5 var(--font-interface); letter-spacing: .08em; }
+.sketchWrapper {
+  width: min(100%, 78cqi);
+  max-width: 440px;
+  aspect-ratio: 1;
+  position: relative;
+  display: grid;
+  background: #faf4ed;
+  border-radius: .6rem;
+  overflow: hidden;
+  box-shadow: 0 1cqi 7cqi rgb(0 0 0 / .45);
+}
+.sketchCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 .portrait { width: min(100%, 78cqi); max-width: 440px; aspect-ratio: 1; position: relative; display: grid; background: #231634; border-radius: .6rem; overflow: hidden; }
 .portrait img, .mobile img { width: 100%; height: auto; display: block; }
 .portrait img { animation: reveal 450ms ease-out both; }

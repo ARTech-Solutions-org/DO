@@ -1,12 +1,13 @@
 import Image from "next/image";
 import { PartyButton, PartyLink } from "../design/PartyButton";
-import { useEffect, useState, type Dispatch } from "react";
+import { useEffect, useRef, useState, type Dispatch } from "react";
 import { forgetCapture, readCapture, type Attempt } from "./capture-resume";
 import type { BoothEvent, BoothState } from "./flow";
 import type { FailureReason } from "./failure";
 import { BrandHeader } from "./BrandHeader";
 import { TicketCard } from "./TicketCard";
 import { SaveButton } from "../design/SaveButton";
+import { Animator } from "./sketch";
 import styles from "./Delivery.module.css";
 
 type Stage = "processing" | "result" | "qr";
@@ -30,6 +31,9 @@ export function Delivery({ state, attempt, dispatch, reset }: {
   const [photo, setPhoto] = useState<string>();
   const [link, setLink] = useState<Link>();
   const [mock, setMock] = useState(false);
+  const [drawingStage, setDrawingStage] = useState<string>("wait");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animatorRef = useRef<Animator | null>(null);
   const { stage } = state;
   const { jobId, owner, sessionId, consentAt, styleId } = attempt;
   const endpoint = "/api/booth/" + jobId;
@@ -70,6 +74,37 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           setMock(current.mock);
           void forgetCapture(jobId);
           if (current.status === "SUCCEEDED") {
+            if (styleId === "caricature" && canvasRef.current) {
+              try {
+                const photoRes = await request("/portrait");
+                if (photoRes.ok) {
+                  const blob = await photoRes.blob();
+                  const url = URL.createObjectURL(blob);
+                  objectUrl = url;
+                  setPhoto(url);
+
+                  const img = new window.Image();
+                  img.src = url;
+                  await new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                  });
+
+                  if (!signal.aborted && canvasRef.current) {
+                    const animator = new Animator(canvasRef.current);
+                    animatorRef.current = animator;
+                    await animator.run({
+                      resultPromise: Promise.resolve(img),
+                      onStage: (st: string) => {
+                        if (!signal.aborted) setDrawingStage(st);
+                      },
+                    });
+                  }
+                }
+              } catch (animErr) {
+                console.error("Sketch animation error:", animErr);
+              }
+            }
             dispatch({ type: "generated", jobId, resultId: jobId });
             return;
           }
@@ -135,6 +170,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
     if (stage === "result") void getPhoto();
     if (stage === "qr") void getLink();
     function release() {
+      if (animatorRef.current) animatorRef.current.stop();
       controller.abort();
       clearTimeout(timer);
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -146,13 +182,42 @@ export function Delivery({ state, attempt, dispatch, reset }: {
   return (
     <section className={`booth-stage ${styles.stage}`} data-stage={stage}>
       <BrandHeader />
-      {stage === "processing" && <>
-        <div className={styles.processing}>
-          <div className={styles.vinyl} aria-hidden="true"><i /></div>
-          <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
-        </div>
-        <p className={styles.sub} role="status">CREATING YOUR LOOK</p>
-      </>}
+      {stage === "processing" && (
+        <>
+          {styleId === "caricature" ? (
+            <div className={styles.sketchWrapper}>
+              <canvas
+                ref={canvasRef}
+                width={1024}
+                height={1024}
+                className={styles.sketchCanvas}
+              />
+              {drawingStage === "wait" && (
+                <div className={styles.processing} style={{ position: "absolute", inset: 0 }}>
+                  <div className={styles.vinyl} aria-hidden="true"><i /></div>
+                  <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className={styles.processing}>
+              <div className={styles.vinyl} aria-hidden="true"><i /></div>
+              <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
+            </div>
+          )}
+          <p className={styles.sub} role="status">
+            {styleId === "caricature"
+              ? drawingStage === "wait"
+                ? "CREATING YOUR CARICATURE…"
+                : drawingStage === "redraw"
+                ? "INKING DETAILS & OUTLINES…"
+                : drawingStage === "color"
+                ? "COLORING IN YOUR LOOK…"
+                : "FINISHING TOUCHES…"
+              : "ACQUIRING 3D POINT CLOUD…"}
+          </p>
+        </>
+      )}
       {stage === "result" && <>
         <h1 ref={focus} tabIndex={-1}>YOUR LOOK</h1>
         <div className={styles.portrait}>
