@@ -163,7 +163,7 @@
   text-align: center;
   z-index: 2;
   font-family: var(--font-display, "Barlow Condensed", "Impact"), sans-serif;
-  font-size: 2.25rem;
+  font-size: clamp(2.4rem, calc(var(--width) * .14), 3.75rem);
   font-weight: 900;
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -178,7 +178,7 @@
   top: 1.1em;
   right: 0;
   rotate: 185deg;
-  font-size: 1rem;
+  font-size: .45em;
   color: #fff;
   line-height: 0.5;
   opacity: 0.35;
@@ -205,7 +205,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(calc(var(--width) * .65), 48cqh);
+  width: min(calc(var(--width) * .76), 48cqh, 100%);
   aspect-ratio: 1;
 }
 
@@ -220,7 +220,7 @@
 .passInfo {
   text-align: center;
   color: #110e18;
-  font-size: 0.72rem;
+  font-size: clamp(.85rem, calc(var(--width) * .04), 1.1rem);
   line-height: 1.35;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -231,7 +231,7 @@
   font-style: normal;
   display: block;
   font-weight: 800;
-  font-size: 0.78rem;
+  font-size: 1.12em;
   color: #000;
 }
 
@@ -248,7 +248,7 @@
   margin-bottom: 0.45rem;
   text-align: center;
   color: #0b0813;
-  font-size: 0.8rem;
+  font-size: clamp(.9rem, calc(var(--width) * .042), 1.15rem);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -259,44 +259,10 @@
 }
 
 .barcode {
-  width: 140px;
-  height: 26px;
-  box-shadow:
-    0px 0 0 1px #000,
-    4px 0 0 1px #000,
-    7px 0 0 1px #000,
-    10px 0 0 1px #000,
-    14px 0 0 1px #000,
-    16px 0 0 1px #000,
-    21px 0 0 1px #000,
-    25px 0 0 1px #000,
-    28px 0 0 1px #000,
-    33px 0 0 1px #000,
-    36px 0 0 1px #000,
-    40px 0 0 1px #000,
-    44px 0 0 1px #000,
-    48px 0 0 1px #000,
-    51px 0 0 1px #000,
-    56px 0 0 1px #000,
-    60px 0 0 1px #000,
-    63px 0 0 1px #000,
-    67px 0 0 1px #000,
-    71px 0 0 1px #000,
-    74px 0 0 1px #000,
-    78px 0 0 1px #000,
-    82px 0 0 1px #000,
-    86px 0 0 1px #000,
-    91px 0 0 1px #000,
-    95px 0 0 1px #000,
-    99px 0 0 1px #000,
-    103px 0 0 1px #000,
-    107px 0 0 1px #000,
-    112px 0 0 1px #000,
-    116px 0 0 1px #000,
-    120px 0 0 1px #000,
-    125px 0 0 1px #000,
-    130px 0 0 1px #000,
-    134px 0 0 1px #000;
+  width: 74%;
+  height: clamp(28px, 5cqh, 38px);
+  background: repeating-linear-gradient(90deg, #16101c 0 2px, transparent 2px 5px,
+    #16101c 5px 6px, transparent 6px 8px, #16101c 8px 12px, transparent 12px 15px);
   margin-inline: auto;
 }
 

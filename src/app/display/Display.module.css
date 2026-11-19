@@ -1,250 +1,64 @@
-.wrapper {
+.screen {
   position: fixed;
   inset: 0;
-  background-color: #05040a;
+  overflow: hidden;
+  isolation: isolate;
+  background: #0b090e center / cover no-repeat var(--result-art, url("/artwork/web/result-ground-full.webp"));
+  --card: min(22vmin, 230px);
+  --travel-x: calc(100vw - var(--card));
+  --travel-y: calc(100dvh - var(--card));
+  --intro: 2.45s;
+}
+.logos {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  user-select: none;
-  font-family: var(--font-headline, sans-serif);
+  gap: clamp(22px, 5vmin, 72px);
+  transition: opacity .35s ease;
 }
-
-.canvas {
-  position: relative;
-  width: 384px;
-  height: 512px;
-  background: radial-gradient(circle at 50% 40%, #1e1333 0%, #0c0817 60%, #05030a 100%);
-  overflow: hidden;
-  box-shadow: 0 0 50px rgba(150, 107, 252, 0.25);
-  border: 1px solid rgba(150, 107, 252, 0.15);
-}
-
-/* Ambient glow & particles */
-.ambient {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: 
-    radial-gradient(ellipse 200px 150px at 50% 20%, rgba(150, 107, 252, 0.18), transparent 70%),
-    radial-gradient(ellipse 250px 180px at 50% 80%, rgba(245, 158, 11, 0.12), transparent 70%);
-}
-
-.ambientBeam {
-  position: absolute;
-  top: -50%;
-  left: -20%;
-  width: 140%;
-  height: 200%;
-  background: linear-gradient(
-    135deg,
-    transparent 40%,
-    rgba(150, 107, 252, 0.08) 50%,
-    transparent 60%
-  );
-  animation: beamSweep 8s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes beamSweep {
-  0% { transform: translateY(-30%) rotate(25deg); }
-  100% { transform: translateY(30%) rotate(25deg); }
-}
-
-/* --- Idle Logos View --- */
-.idleContainer {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding: 44px 24px;
-  box-sizing: border-box;
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  opacity: 1;
-  transform: scale(1);
-  z-index: 10;
-}
-
-.idleContainerHidden {
-  opacity: 0;
-  transform: scale(0.85);
-  pointer-events: none;
-}
-
-.topLogo {
-  width: 200px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-  animation: floatSoft 4s ease-in-out infinite;
-}
-
-.eventTitle {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  text-align: center;
-}
-
-.boothBadge {
-  font-size: 11px;
-  letter-spacing: 0.3em;
-  color: #F59E0B;
-  text-transform: uppercase;
-  font-weight: 700;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  padding: 4px 14px;
-  border-radius: 999px;
-  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
-}
-
-.centerArtwork {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(150, 107, 252, 0.3) 0%, rgba(150, 107, 252, 0.05) 70%, transparent 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px dashed rgba(150, 107, 252, 0.4);
-  animation: pulseRotate 12s linear infinite;
-}
-
-.centerIcon {
-  font-size: 32px;
-  color: #fff;
-  opacity: 0.9;
-  filter: drop-shadow(0 0 12px #966BFC);
-}
-
-.bottomLogo {
-  width: 170px;
-  height: auto;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
-  animation: floatSoft 4s ease-in-out infinite 2s;
-}
-
-@keyframes floatSoft {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes pulseRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* --- Punch Entrance Flash & Shockwave --- */
-.shockwave {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0%, rgba(150, 107, 252, 0.8) 40%, transparent 80%);
-  pointer-events: none;
-  z-index: 50;
-  animation: shockwaveBurst 0.65s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-}
-
-@keyframes shockwaveBurst {
-  0% {
-    opacity: 1;
-    transform: scale(0.2);
-  }
-  60% {
-    opacity: 0.8;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.2);
-  }
-}
-
-/* --- Bouncing Photo Element --- */
-.bouncingWrapper {
+.logos img { display: block; width: min(28vmin, 315px); height: auto; }
+.screen:has([data-ready="true"]) .logos { opacity: 0; }
+.horizontal, .vertical {
   position: absolute;
   top: 0;
   left: 0;
-  will-change: transform;
-  z-index: 30;
-  pointer-events: none;
+  width: var(--card);
+  height: var(--card);
 }
-
-.bouncingCard {
-  width: 220px;
-  height: 220px;
-  border-radius: 20px;
-  background: #966BFC;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.8),
-    0 0 25px rgba(150, 107, 252, 0.7),
-    inset 0 0 0 2px rgba(255, 255, 255, 0.4);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: box-shadow 0.15s ease-out;
-}
-
-.punchIn {
-  animation: punchInAnim 0.75s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes punchInAnim {
-  0% {
-    opacity: 0;
-    transform: scale(0.1) rotate(-15deg);
-    filter: brightness(2.5) contrast(1.5);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.18) rotate(4deg);
-    filter: brightness(1.4);
-  }
-  85% {
-    transform: scale(0.96) rotate(-2deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-    filter: brightness(1);
-  }
-}
-
-.photoImg {
+.horizontal { transform: translateX(calc(var(--travel-x) / 2)); }
+.vertical { transform: translateY(calc(var(--travel-y) / 2)); }
+.portrait {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  object-fit: contain;
+  border-radius: 3%;
+  opacity: 0;
+  box-shadow: 0 .6vmin 2.2vmin #0005;
 }
-
-/* Edge Hit Impact Pulse */
-.edgeHit {
-  box-shadow: 
-    0 12px 35px rgba(0, 0, 0, 0.9),
-    0 0 45px #F59E0B,
-    0 0 65px #966BFC,
-    inset 0 0 0 3px #ffffff !important;
-  transform: scale(1.05);
+.horizontal[data-ready="true"] { animation: across 19s linear var(--intro) infinite; }
+.horizontal[data-ready="true"] .vertical { animation: down 15s linear var(--intro) infinite; }
+.horizontal[data-ready="true"] .portrait { animation: introduce var(--intro) both; }
+@keyframes introduce {
+  0% { opacity: 0; transform: scale(2.25); }
+  14%, 68% { opacity: 1; transform: scale(2.25); animation-timing-function: cubic-bezier(.4,0,.2,1); }
+  100% { opacity: 1; transform: scale(1); }
 }
-
-/* Corner Watermark Badge */
-.cardBadge {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(10, 8, 18, 0.75);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
+@keyframes across {
+  0%, 100% { transform: translateX(calc(var(--travel-x) / 2)); }
+  25% { transform: translateX(var(--travel-x)); }
+  75% { transform: translateX(0); }
+}
+@keyframes down {
+  0%, 100% { transform: translateY(calc(var(--travel-y) / 2)); }
+  25% { transform: translateY(0); }
+  75% { transform: translateY(var(--travel-y)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logos { transition: none; }
+  .horizontal[data-ready="true"], .horizontal[data-ready="true"] .vertical,
+  .horizontal[data-ready="true"] .portrait { animation: none; }
+  .horizontal[data-ready="true"] .portrait { opacity: 1; transform: scale(2.25); }
 }
