@@ -259,7 +259,9 @@ class MainActivity : ComponentActivity() {
                     if (!newUrl.startsWith("http://") && !newUrl.startsWith("https://")) {
                         newUrl = "https://$newUrl"
                     }
-                    if (!newUrl.substringAfter("://").contains(":")) {
+                    val hostPart = newUrl.substringAfter("://").substringBefore("/").substringBefore(":")
+                    val isPureIp = hostPart.matches(Regex("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}$"))
+                    if (isPureIp && !newUrl.substringAfter("://").substringBefore("/").contains(":")) {
                         newUrl = "$newUrl:3000"
                     }
                     setServerUrl(newUrl)
