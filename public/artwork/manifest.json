@@ -1,0 +1,301 @@
+{
+  "version": 1,
+  "referenceStage": {
+    "width": 1080,
+    "height": 1920,
+    "hardwareConfirmed": false
+  },
+  "origin": "Codex native image generation; model identifier not exposed",
+  "publicRoot": "public",
+  "assets": [
+    {
+      "id": "welcome-club",
+      "role": "Welcome background",
+      "status": "generated",
+      "transparent": false,
+      "placement": "cover",
+      "master": {
+        "url": "/artwork/masters/welcome-club.png",
+        "width": 941,
+        "height": 1672,
+        "format": "png",
+        "bytes": 2083745
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/welcome-club-full.webp",
+          "width": 941,
+          "height": 1672,
+          "format": "webp",
+          "bytes": 134112
+        },
+        "compact": {
+          "url": "/artwork/web/welcome-club-compact.webp",
+          "width": 540,
+          "height": 959,
+          "format": "webp",
+          "bytes": 40870
+        },
+        "proof": {
+          "url": "/artwork/proofs/welcome-club.webp",
+          "width": 192,
+          "height": 341,
+          "format": "webp",
+          "bytes": 6992
+        }
+      }
+    },
+    {
+      "id": "style-stage",
+      "role": "Choose Your Style background",
+      "status": "generated",
+      "transparent": false,
+      "placement": "cover",
+      "master": {
+        "url": "/artwork/masters/style-stage.png",
+        "width": 941,
+        "height": 1672,
+        "format": "png",
+        "bytes": 960931
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/style-stage-full.webp",
+          "width": 941,
+          "height": 1672,
+          "format": "webp",
+          "bytes": 60080
+        },
+        "compact": {
+          "url": "/artwork/web/style-stage-compact.webp",
+          "width": 540,
+          "height": 959,
+          "format": "webp",
+          "bytes": 17580
+        },
+        "proof": {
+          "url": "/artwork/proofs/style-stage.webp",
+          "width": 192,
+          "height": 341,
+          "format": "webp",
+          "bytes": 2890
+        }
+      }
+    },
+    {
+      "id": "spotlight",
+      "role": "Reusable spotlight layer",
+      "status": "generated",
+      "transparent": false,
+      "placement": "screen blend on a dark layer",
+      "master": {
+        "url": "/artwork/masters/spotlight.png",
+        "width": 941,
+        "height": 1672,
+        "format": "png",
+        "bytes": 1728820
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/spotlight-full.webp",
+          "width": 941,
+          "height": 1672,
+          "format": "webp",
+          "bytes": 41700
+        },
+        "compact": {
+          "url": "/artwork/web/spotlight-compact.webp",
+          "width": 540,
+          "height": 959,
+          "format": "webp",
+          "bytes": 6456
+        },
+        "proof": {
+          "url": "/artwork/proofs/spotlight.webp",
+          "width": 192,
+          "height": 341,
+          "format": "webp",
+          "bytes": 1644
+        }
+      }
+    },
+    {
+      "id": "mirror-ball",
+      "role": "Isolated mirror ball",
+      "status": "generated",
+      "transparent": true,
+      "placement": "contain",
+      "master": {
+        "url": "/artwork/masters/mirror-ball.png",
+        "width": 1254,
+        "height": 1254,
+        "format": "png",
+        "bytes": 1996394
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/mirror-ball-full.webp",
+          "width": 1254,
+          "height": 1254,
+          "format": "webp",
+          "bytes": 336860
+        },
+        "compact": {
+          "url": "/artwork/web/mirror-ball-compact.webp",
+          "width": 540,
+          "height": 540,
+          "format": "webp",
+          "bytes": 62144
+        },
+        "proof": {
+          "url": "/artwork/proofs/mirror-ball.webp",
+          "width": 192,
+          "height": 192,
+          "format": "webp",
+          "bytes": 12134
+        }
+      }
+    },
+    {
+      "id": "result-ground",
+      "role": "Result and QR backdrop",
+      "status": "generated",
+      "transparent": false,
+      "placement": "cover",
+      "master": {
+        "url": "/artwork/masters/result-ground.png",
+        "width": 941,
+        "height": 1672,
+        "format": "png",
+        "bytes": 1838121
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/result-ground-full.webp",
+          "width": 941,
+          "height": 1672,
+          "format": "webp",
+          "bytes": 57066
+        },
+        "compact": {
+          "url": "/artwork/web/result-ground-compact.webp",
+          "width": 540,
+          "height": 959,
+          "format": "webp",
+          "bytes": 9694
+        },
+        "proof": {
+          "url": "/artwork/proofs/result-ground.webp",
+          "width": 192,
+          "height": 341,
+          "format": "webp",
+          "bytes": 1414
+        }
+      }
+    },
+    {
+      "id": "thank-you-vignette",
+      "role": "Thank You background",
+      "status": "generated",
+      "transparent": false,
+      "placement": "cover",
+      "master": {
+        "url": "/artwork/masters/thank-you-vignette.png",
+        "width": 941,
+        "height": 1672,
+        "format": "png",
+        "bytes": 1603034
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/thank-you-vignette-full.webp",
+          "width": 941,
+          "height": 1672,
+          "format": "webp",
+          "bytes": 65966
+        },
+        "compact": {
+          "url": "/artwork/web/thank-you-vignette-compact.webp",
+          "width": 540,
+          "height": 959,
+          "format": "webp",
+          "bytes": 16880
+        },
+        "proof": {
+          "url": "/artwork/proofs/thank-you-vignette.webp",
+          "width": 192,
+          "height": 341,
+          "format": "webp",
+          "bytes": 2970
+        }
+      }
+    },
+    {
+      "id": "caricature-sample",
+      "role": "Fictional adult style example",
+      "status": "generated",
+      "transparent": false,
+      "placement": "contain",
+      "master": {
+        "url": "/artwork/masters/caricature-sample.png",
+        "width": 1195,
+        "height": 1316,
+        "format": "png",
+        "bytes": 2215830
+      },
+      "variants": {
+        "full": {
+          "url": "/artwork/web/caricature-sample-full.webp",
+          "width": 1195,
+          "height": 1316,
+          "format": "webp",
+          "bytes": 204860
+        },
+        "compact": {
+          "url": "/artwork/web/caricature-sample-compact.webp",
+          "width": 540,
+          "height": 595,
+          "format": "webp",
+          "bytes": 32032
+        },
+        "proof": {
+          "url": "/artwork/proofs/caricature-sample.webp",
+          "width": 192,
+          "height": 211,
+          "format": "webp",
+          "bytes": 5642
+        }
+      }
+    }
+  ],
+  "pending": [
+    {
+      "id": "one-logo",
+      "status": "PENDING",
+      "needs": "Approved SVG masters and event lockup selection"
+    },
+    {
+      "id": "do-logo",
+      "status": "PENDING",
+      "needs": "Approved SVG masters and event lockup selection"
+    },
+    {
+      "id": "one-font",
+      "status": "PENDING",
+      "needs": "Licensed Sharp Sans Display No2 Bold and Medium files"
+    },
+    {
+      "id": "do-font",
+      "status": "PENDING",
+      "needs": "Licensed Alexandria files and approved weights"
+    }
+  ],
+  "temporaryDisplayFont": {
+    "family": "Barlow Condensed",
+    "weight": 700,
+    "url": "/fonts/barlow-condensed/BarlowCondensed-Bold.ttf",
+    "license": "/fonts/barlow-condensed/OFL.txt",
+    "status": "temporary"
+  },
+  "tokens": "src/design/tokens.css"
+}

@@ -1,0 +1,153 @@
+.party {
+  --pill-height: clamp(52px, 9.65cqi, 112px);
+  --pill-type: clamp(1.2rem, 5.2cqi, 2.8rem);
+  --pill-padding: clamp(18px, 4.5cqi, 52px);
+  --violet: #c34aff;
+  --amber: #ffb044;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .65em;
+  box-sizing: border-box;
+  min-block-size: var(--pill-height);
+  max-inline-size: 100%;
+  padding: .45em var(--pill-padding);
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  text-decoration: none;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+  color: #fff;
+  font-family: var(--font-button, "Barlow Condensed", "Montserrat", "Outfit", sans-serif);
+  font-weight: 800;
+  font-size: var(--pill-type);
+  line-height: 1;
+  letter-spacing: .08em;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: filter 220ms ease, transform 200ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+.label { min-width: 0; overflow-wrap: anywhere; pointer-events: none; }
+.party[data-size="compact"] {
+  --pill-height: 48px;
+  --pill-type: clamp(1.05rem, 3.2cqi, 1.45rem);
+  --pill-padding: 1.25em;
+  letter-spacing: .07em;
+}
+.party[data-party="primary"] {
+  background:
+    radial-gradient(ellipse at 50% -20%, #ffffff45, transparent 62%),
+    linear-gradient(180deg, #b735f6, #8515ac 43%, #55096d 77%, #51006e);
+  border-color: #ca47ee;
+  border-top-color: #ecc3ff;
+  box-shadow: inset 0 2px 4px #ffffff40, inset 0 -5px 12px #d64cf533, 0 6px 18px #9426b842;
+}
+.party[data-party="primary"]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: auto 13% -1px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #fff4cb 5%, #ffb044 29%, #ff8b2460 58%, transparent 74%);
+  box-shadow: 0 4px 12px -2px #ff8b2480;
+}
+.party[data-party="outline"] {
+  background: #130918a8;
+  border: 2px solid color-mix(in srgb, var(--violet) 88%, #8d2fb5);
+  box-shadow: inset 0 0 8px #a43ee019, 0 0 8px #a43ee01c;
+}
+.party[data-party="orange"] {
+  background: linear-gradient(180deg, #482118, #291118 48%, #1c0c14);
+  border-color: #ffd08a;
+  box-shadow: inset 0 0 14px #ff8b2455, 0 0 5px #ff922eb0, 0 0 18px #ff73194f, 0 0 36px #ff5a201c;
+}
+.party[data-party="orange"]::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 0 18% auto;
+  height: 1px;
+  opacity: 0;
+  background: radial-gradient(ellipse, #ffefd7, transparent 62%) left / 50% 100% no-repeat;
+  transition: background-position 240ms ease, opacity 180ms ease;
+}
+.party[data-party="glass"] {
+  background: linear-gradient(180deg, #51205ce6, #32133de8 45%, #200d2af5);
+  border-color: #855397;
+  border-top-color: #d3a0e5;
+  box-shadow: inset 0 2px 12px #dec1ef20, inset 0 -2px 7px #d875ff65, 0 5px 14px #7b339838;
+}
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-height: 1.33em;
+  padding-inline-end: .65em;
+  border-inline-end: 1px solid #d6a3ed70;
+  color: #e9c5f6;
+  pointer-events: none;
+}
+.icon[data-icon="scan"] { border-color: #ffb04499; color: white; }
+.icon svg { display: block; width: 1.43em; height: 1.43em; transition: transform 220ms ease; }
+.brackets { stroke: var(--amber); stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.party:focus, .party:focus-visible { outline: none !important; }
+@media (hover: hover) {
+  .party:not(:disabled):hover { filter: brightness(1.17); transform: translateY(-2px); }
+  .party[data-party="outline"]:not(:disabled):hover { background-color: #341340; }
+  .party[data-party="orange"]:not(:disabled):hover::after { background-position: right; opacity: 1; }
+  .party:not(:disabled):hover [data-icon="refresh"] svg { transform: rotate(23deg); }
+}
+.party:not(:disabled):active { transform: scale(.975); filter: brightness(.9); transition-duration: 120ms; }
+.party:disabled {
+  cursor: not-allowed;
+  color: #d6cfdf;
+  border-color: #766481;
+  background: #211a28;
+  box-shadow: none;
+}
+.party:disabled::after { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .party, .party[data-party="orange"]::after, .icon svg { transition: none; }
+  .party[data-party="orange"]:not(:disabled):hover::after { background-position: left; }
+  .party:not(:disabled):is(:hover, :active), .party:not(:disabled):hover [data-icon="refresh"] svg { transform: none; }
+}
+
+/* Preserve pill geometry, icon spacing and interaction timing in the amber lighting. */
+:global([data-theme="orange"]) .party {
+  --amber: var(--gold);
+}
+:global([data-theme="orange"]) .party[data-party="primary"]:not(:disabled) {
+  background: radial-gradient(ellipse at 50% -20%, #ffffff45, transparent 62%),
+    linear-gradient(180deg, var(--warm), #a45028 43%, #74351e 77%, #65301e);
+  border-color: var(--warm);
+  border-top-color: #f4d2ac;
+  box-shadow: inset 0 2px 4px #ffffff40, inset 0 -5px 12px #ca5d3633, 0 6px 18px #ca5d3642;
+}
+:global([data-theme="orange"]) .party[data-party="outline"]:not(:disabled) {
+  background-color: #1b100aa8;
+  border-color: var(--warm);
+  box-shadow: inset 0 0 8px #ca5d3619, 0 0 8px #ca5d361c;
+}
+:global([data-theme="orange"]) .party[data-party="glass"]:not(:disabled) {
+  background: linear-gradient(180deg, #5a331fe6, #382318e8 45%, #251710f5);
+  border-color: var(--burnt);
+  border-top-color: var(--gold);
+  box-shadow: inset 0 2px 12px #ebc09920, inset 0 -2px 7px #e48d3d65, 0 5px 14px #ca5d3638;
+}
+:global([data-theme="orange"]) .party[data-party="orange"]:not(:disabled) {
+  background: linear-gradient(180deg, #4d2e1b, #302015 48%, #21170f);
+  border-color: var(--gold);
+  box-shadow: inset 0 0 14px #e48d3d55, 0 0 5px #e8a440b0, 0 0 18px #e48d3d4f, 0 0 36px #ca5d361c;
+}
+:global([data-theme="orange"]) .icon[data-icon="refresh"] { color: #f5d9b8; border-color: #e48d3d70; }
+:global([data-theme="orange"]) .party:disabled { background: #251e19; color: #ddd3ca; border-color: #766453; }
+@media (hover: hover) {
+  :global([data-theme="orange"]) .party[data-party="outline"]:not(:disabled):hover { background-color: #3d271a; }
+}

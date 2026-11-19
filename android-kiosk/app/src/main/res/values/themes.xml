@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.DOPhotoBooth" parent="android:Theme.Material.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">#05040a</item>
+        <item name="android:statusBarColor">#05040a</item>
+        <item name="android:navigationBarColor">#05040a</item>
+    </style>
+</resources>

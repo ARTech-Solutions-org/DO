@@ -1,0 +1,202 @@
+.poster {
+  overflow: hidden;
+  background: var(--surface-stage);
+}
+
+.photograph, .beam {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.photograph {
+  background: center / cover no-repeat var(--welcome-art);
+}
+
+.beam {
+  background: center / cover no-repeat var(--beam-art);
+  mix-blend-mode: screen;
+  opacity: .16;
+  animation: breathe 10s ease-in-out infinite alternate;
+}
+
+.partners {
+  position: absolute;
+  inset: 5.2% var(--stage-gutter) auto;
+  display: flex;
+  align-items: center;
+  gap: 2.2cqi;
+  font: 600 max(.78rem, 2.3cqi)/1.4 var(--font-interface);
+  letter-spacing: .005em;
+  color: #f2edf7;
+}
+.partners i { height: 1em; border-inline-start: 1px solid #a196ac; }
+
+.brandHeader {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: calc(var(--stage-gutter) - 1.5cqi);
+}
+
+.brandHeader img {
+  display: block;
+  width: max(105px, 23cqi);
+  height: auto;
+}
+
+.bill {
+  position: absolute;
+  inset: 31% var(--stage-gutter) auto;
+  animation: arrive 950ms cubic-bezier(.2,.7,.18,1) both;
+}
+.medium {
+  display: flex;
+  gap: 1.9cqi;
+  align-items: center;
+  margin: 0 0 3.6cqi;
+  font: 700 max(.75rem, 2.3cqi)/1.4 var(--font-display);
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: #f3e8f7;
+}
+.medium::before { content: ""; width: 5.3cqi; height: 2px; background: var(--accent-highlight); }
+.title { margin: 0; }
+
+.title img {
+  display: block;
+  width: 64cqi;
+  max-width: 460px;
+  height: auto;
+  margin-block-start: 9cqi;
+}
+
+.foot {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 12cqi var(--stage-gutter) max(5.4cqi, env(safe-area-inset-bottom));
+  background: linear-gradient(transparent, rgb(6 4 10 / .8) 53%, #08060c 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 50;
+  pointer-events: none;
+}
+.start {
+  width: min(88%, 460px);
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.dialog {
+  width: min(28rem, 78vw);
+  box-sizing: border-box;
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  border: 1px solid var(--panel-border, #685b78);
+  border-radius: .8rem;
+  color: #f8f4fb; background: var(--deep-panel, #1b1523);
+  font: 400 1rem/1.5 var(--font-interface);
+}
+.dialog h2 { margin: 0; font: 700 2.5rem/1 var(--font-display); }
+.dialog::backdrop { background: rgb(5 3 9 / .82); }
+.dialog form { display: flex; flex-wrap: wrap; gap: .75rem; }
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(1.8cqi); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes breathe {
+  from { opacity: .10; transform: scale(1); }
+  to { opacity: .23; transform: scale(1.035); }
+}
+@media (max-aspect-ratio: 9/16) {
+  .poster { min-height: 100svh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bill, .beam { animation: none; }
+}
+
+/* The old sphere is part of the photograph. Feather only its lower-right silhouette. */
+.photograph {
+  mask-image: radial-gradient(ellipse 105% 54% at 123% 100%, transparent 99%, black 107%);
+}
+
+.disc {
+  --art: url("/cd-welcome.png");
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: center / cover no-repeat var(--art);
+  z-index: 5;
+  filter: drop-shadow(0 0 18px rgba(150, 107, 252, 0.35));
+  animation: disc-shimmer 7s ease-in-out infinite alternate;
+}
+
+:global([data-theme="orange"]) .disc {
+  filter: drop-shadow(0 0 22px rgba(228, 141, 61, 0.5));
+}
+
+@keyframes disc-shimmer {
+  0% {
+    filter: drop-shadow(0 0 14px rgba(150, 107, 252, 0.3));
+    transform: scale(1);
+  }
+  100% {
+    filter: drop-shadow(0 0 28px rgba(195, 74, 255, 0.55));
+    transform: scale(1.012);
+  }
+}
+
+.discLight {
+  display: none;
+}
+
+/* Reveal the original mirror ball already present in both club photographs. */
+:global([data-welcome-artwork="ball"]) .photograph { mask-image: none; }
+:global([data-welcome-artwork="ball"]) .disc { display: none; }
+
+.artworkHotspot {
+  position: absolute;
+  z-index: 45;
+  right: 0;
+  bottom: 0;
+  width: 75%;
+  height: 50%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+:global([data-welcome-artwork="ball"]) .artworkHotspot {
+  position: absolute;
+  z-index: 45;
+  right: 0;
+  bottom: 0;
+  width: 75%;
+  height: 50%;
+  inset: auto 0 0 auto;
+  transform: none;
+  clip-path: none;
+}
+
+.hotspot {
+  position: absolute;
+  z-index: 60;
+  top: 0;
+  right: 0;
+  width: 150px;
+  height: 150px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+@media (prefers-reduced-motion: reduce) { .disc { animation: none; } }

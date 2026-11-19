@@ -1,0 +1,125 @@
+/* Opt-in stage and type system. Measurements in cqi refer to the stage's inline size. */
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/barlow-condensed/BarlowCondensed-Bold.ttf") format("truetype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+.booth-stage {
+  --one-purple: #966bfc;
+  --do-orange: #e48d3d;
+  --do-black: #000;
+  --do-white: #fff;
+  --surface-stage: #0b0911;
+  --surface-panel: #16121f;
+  --text-primary: var(--do-white);
+  --text-secondary: #d6cfdf;
+  --portrait-background: var(--one-purple);
+  --accent-highlight: var(--do-orange);
+
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-button: "Barlow Condensed", "Montserrat", "Outfit", system-ui, -apple-system, sans-serif;
+  --font-interface: system-ui, sans-serif;
+  /* At 1080px stage width: 144, 96, 32 and 24 CSS px. */
+  --type-hero: max(3rem, 13.3333cqi);
+  --type-heading: max(2.25rem, 8.8889cqi);
+  --type-action: max(1rem, 2.9630cqi);
+  --type-body: max(1rem, 2.2222cqi);
+  --size-touch: max(44px, 7.4074cqi);
+
+  /* Provisional event grid in reference pixels: sides 72, top 96, foot 120. */
+  --stage-gutter: 6.6667cqi;
+  --stage-top: 8.8889cqi;
+  --stage-foot: 11.1111cqi;
+  --stage-gap: 2.2222cqi;
+  --stage-header-zone: 16.6667cqi;
+  --stage-action-zone: 20cqi;
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100svh;
+  height: 100svh;
+  margin-inline: auto;
+  isolation: isolate;
+  color: var(--text-primary);
+  background: var(--surface-stage);
+  font-family: var(--font-interface);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.booth-stage__safe {
+  position: absolute;
+  inset: var(--stage-top) var(--stage-gutter) var(--stage-foot);
+  display: grid;
+  grid-template-rows: var(--stage-header-zone) minmax(0, 1fr) var(--stage-action-zone);
+  gap: var(--stage-gap);
+}
+
+.booth-type-hero, .booth-type-heading {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: .94;
+  letter-spacing: -.015em;
+}
+
+.booth-type-hero { font-size: var(--type-hero); }
+.booth-type-heading { font-size: var(--type-heading); }
+.booth-type-action {
+  font: 700 var(--type-action)/1.08 var(--font-display);
+  letter-spacing: .055em;
+}
+.booth-type-body { font: 400 var(--type-body)/1.45 var(--font-interface); }
+
+/* Decorative assets are selected on the root before first paint. */
+:root {
+  --welcome-art: url("/artwork/web/welcome-club-full.webp");
+  --stage-art: url("/artwork/web/style-stage-full.webp");
+  --result-art: url("/artwork/web/result-ground-full.webp");
+  --finale-art: url("/artwork/web/thank-you-vignette-full.webp");
+  --beam-art: url("/artwork/web/spotlight-compact.webp");
+}
+
+:root[data-theme="orange"] {
+  --burnt: #CA5D36;
+  --warm: #E48D3D;
+  --gold: #E8A440;
+  --welcome-art: url("/artwork/web/welcome-club-amber-full.webp");
+  --stage-art: url("/artwork/web/style-stage-amber-full.webp");
+  --result-art: url("/artwork/web/result-ground-amber-full.webp");
+  --finale-art: url("/artwork/web/thank-you-vignette-amber-full.webp");
+  --beam-art: url("/artwork/web/spotlight-amber-compact.webp");
+  --panel-border: #71503d;
+  --selected: var(--gold);
+  --soft-ink: #f4eae1;
+  --deep-panel: #291b15;
+  --ring-wash: rgb(43 23 13 / .74);
+  --error-wash: linear-gradient(#140d0877, #140d08c7);
+  --record-tracks: repeating-radial-gradient(circle, #1c1511 0 2px, #30231b 3px 4px, #18120f 5px 7px);
+  --record-light: conic-gradient(transparent 4%, #ca5d3655 15%, transparent 28% 57%, #e8a44050 62%, transparent 76%);
+}
+
+:root[data-theme="orange"] .booth-stage {
+  --surface-stage: #100c09;
+  --surface-panel: #201711;
+  --text-secondary: #ded3c8;
+  --accent-highlight: var(--gold);
+}
+
+@media (max-width: 560px) {
+  :root {
+    --welcome-art: url("/artwork/web/welcome-club-compact.webp");
+    --stage-art: url("/artwork/web/style-stage-compact.webp");
+    --result-art: url("/artwork/web/result-ground-compact.webp");
+    --finale-art: url("/artwork/web/thank-you-vignette-compact.webp");
+  }
+  :root[data-theme="orange"] {
+    --welcome-art: url("/artwork/web/welcome-club-amber-compact.webp");
+    --stage-art: url("/artwork/web/style-stage-amber-compact.webp");
+    --result-art: url("/artwork/web/result-ground-amber-compact.webp");
+    --finale-art: url("/artwork/web/thank-you-vignette-amber-compact.webp");
+  }
+}

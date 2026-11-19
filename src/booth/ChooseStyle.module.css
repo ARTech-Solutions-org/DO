@@ -1,0 +1,158 @@
+.stage {
+  display: flex;
+  min-inline-size: 0;
+  background: var(--surface-stage) center / cover no-repeat var(--stage-art);
+}
+
+.layout {
+  display: flex;
+  flex: 1;
+  min-inline-size: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: max(1rem, 4cqi) var(--stage-gutter) max(3.5cqi, env(safe-area-inset-bottom));
+}
+
+.layout h1 {
+  margin: clamp(4px, 1.5cqi, 12px) 0 0;
+  text-align: center;
+}
+
+.layout h1::after {
+  display: block;
+  width: max(1.6rem, 5cqi);
+  height: 2px;
+  margin: max(.7rem, 2.5cqi) auto 0;
+  background: var(--accent-highlight);
+  content: "";
+}
+
+.catalog {
+  display: flex;
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  min-inline-size: 0;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: max(1rem, 3cqi);
+  margin: 0;
+  padding: max(1rem, 4cqi) 0;
+  border: 0;
+}
+
+.option {
+  position: relative;
+  width: min(100%, 72cqi);
+  max-width: 440px;
+  animation: reveal 350ms ease-out both;
+}
+
+.radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 2px solid var(--panel-border, #726583);
+  border-radius: max(.75rem, 2cqi);
+  background: var(--surface-panel);
+  cursor: pointer;
+}
+
+.tile:hover { border-color: var(--selected, #d3baff); }
+.radio:checked + .tile { border-color: var(--selected, #d3baff); }
+.radio:focus-visible + .tile { outline: 3px solid white; outline-offset: 5px; }
+
+.tile img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.caption {
+  display: grid;
+  gap: .22em;
+  padding: max(.55rem, 1.7cqi) max(.8rem, 2.8cqi);
+}
+
+.name {
+  font: 700 max(1.5rem, 5.2cqi)/1 var(--font-display);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+
+.sample { color: var(--text-secondary); font-size: max(.75rem, 1.85cqi); }
+
+.indicator {
+  position: absolute;
+  inset: max(.55rem, 1.7cqi) max(.55rem, 1.7cqi) auto auto;
+  display: grid;
+  width: max(1.55rem, 4.3cqi);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--selected, #d3baff);
+  border-radius: 50%;
+  background: var(--surface-panel);
+}
+
+.radio:checked + .tile .indicator {
+  background: var(--selected, #d3baff);
+  color: var(--surface-panel);
+}
+
+.radio:checked + .tile .indicator::after {
+  width: 34%;
+  height: 17%;
+  transform: translateY(-10%) rotate(-45deg);
+  border: solid currentColor;
+  border-width: 0 0 2px 2px;
+  content: "";
+}
+
+.actions {
+  display: grid;
+  width: min(100%, 72cqi);
+  max-width: 440px;
+  justify-items: stretch;
+  gap: max(.25rem, 1cqi);
+}
+
+.back {
+  justify-self: center;
+  min-height: var(--size-touch);
+  padding: .35em 1.2em;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-button, "Montserrat", "Outfit", sans-serif);
+  font-weight: 700;
+  font-size: max(1.15rem, 3cqi);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.back:hover { text-decoration: underline; }
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(.6rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+@media (max-aspect-ratio: 9/16) {
+  .stage { min-height: 100svh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .option { animation: none; }
+}

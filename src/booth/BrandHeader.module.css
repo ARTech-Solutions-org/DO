@@ -1,0 +1,39 @@
+.brandHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-block: clamp(10px, 3cqi, 22px);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3.2cqi, 20px);
+}
+
+.doLogo {
+  height: clamp(26px, 6.2cqi, 40px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.divider {
+  width: 2px;
+  height: clamp(24px, 5.8cqi, 36px);
+  background: #ffffff;
+  display: block;
+  opacity: 0.9;
+  border-radius: 1px;
+}
+
+.oneLogo {
+  height: clamp(24px, 5.8cqi, 36px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+}

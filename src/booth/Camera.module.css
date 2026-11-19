@@ -1,0 +1,216 @@
+.stage {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  background: #100b17 center / cover var(--stage-art);
+}
+
+.header {
+  margin: clamp(12px, 5cqi, 52px) 0 0;
+  font: 600 max(.78rem, 2.3cqi)/1.4 var(--font-interface);
+}
+
+.header span {
+  color: var(--accent-highlight);
+  margin: 0 .5em;
+}
+
+.title {
+  margin: .15em 0;
+  font: 700 max(2rem, 11cqi)/1 var(--font-display);
+  letter-spacing: -.025em;
+}
+
+.frame {
+  position: relative;
+  width: 78%;
+  max-width: 460px;
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--panel-border, #95899e);
+  border-radius: 2cqi;
+  background: #121015;
+  overflow: hidden;
+}
+
+.frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  object-fit: cover;
+}
+
+.mirror {
+  transform: scaleX(-1);
+}
+
+.guides {
+  position: absolute;
+  inset: 4%;
+  background: linear-gradient(white, white) left top, linear-gradient(white, white) left bottom,
+    linear-gradient(white, white) right top, linear-gradient(white, white) right bottom;
+  background-size: 6% 2px;
+  background-repeat: no-repeat;
+}
+
+.guides::after {
+  content: "";
+  display: block;
+  height: 100%;
+  background: inherit;
+  background-size: 2px 5%;
+}
+
+.status {
+  margin: 0 var(--stage-gutter);
+  text-align: center;
+  font-size: max(.9rem, 2.4cqi);
+}
+
+.status:empty {
+  display: none;
+}
+
+.actions {
+  width: 78%;
+  max-width: 460px;
+  display: grid;
+  gap: .4rem;
+  padding: 1cqi 0 max(3cqi, env(safe-area-inset-bottom));
+}
+
+.stage button,
+.settings summary,
+.panel select {
+  min-height: var(--size-touch);
+}
+
+.secondary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.secondary button,
+.settings summary {
+  display: grid;
+  align-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--soft-ink, #eee6fa);
+  padding: 0 .5rem;
+  font-family: var(--font-button, "Montserrat", "Outfit", sans-serif);
+  font-weight: 700;
+  font-size: max(1.15rem, 3cqi);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.settings {
+  position: relative;
+}
+
+.panel {
+  position: absolute;
+  z-index: 2;
+  bottom: 100%;
+  right: 0;
+  width: max-content;
+  max-width: 70cqi;
+  padding: 1rem;
+  border: 1px solid var(--panel-border, #9c8ba8);
+  border-radius: .6rem;
+  background: var(--deep-panel, #241c2c);
+  font-size: max(.9rem, 2cqi);
+}
+
+.panel label {
+  display: flex;
+  align-items: center;
+  gap: .5em;
+  min-height: 44px;
+}
+
+.panel select {
+  max-width: 50cqi;
+}
+
+.stage :is(summary, select, input):focus-visible {
+  outline: 3px solid white;
+  outline-offset: 2px;
+}
+
+.stage[data-stage="countdown"] {
+  justify-content: center;
+}
+
+.stage[data-stage="countdown"] .header {
+  position: absolute;
+  top: 0;
+  z-index: 1;
+}
+
+.stage[data-stage="countdown"] .frame {
+  width: 100%;
+  border: 0;
+  border-radius: 0;
+  opacity: .4;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  margin: 0;
+  border: 2px solid var(--selected, #d5b6ff);
+  border-bottom-color: var(--accent-highlight);
+  width: 65%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ring-wash, rgb(24 10 36 / .74));
+  font: italic 42cqi/1 Georgia, serif;
+}
+
+.ring span {
+  animation: beat 380ms ease-out;
+}
+
+.cancel {
+  position: absolute;
+  bottom: max(6cqi, env(safe-area-inset-bottom));
+}
+
+@keyframes beat {
+  from {
+    transform: scale(.93);
+    opacity: .6;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-aspect-ratio: 9/16) {
+  .stage {
+    min-height: 100svh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring span {
+    animation: none;
+  }
+}

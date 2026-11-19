@@ -1,0 +1,55 @@
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  align-items: center;
+  min-inline-size: 0;
+  box-sizing: border-box;
+  padding: 5.2cqi var(--stage-gutter) max(5.5cqi, env(safe-area-inset-bottom));
+  text-align: center;
+  background: #100914 center / cover no-repeat;
+}
+.finale { background-image: var(--finale-art); }
+.lights {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  background: center / cover var(--beam-art);
+  opacity: .52; mix-blend-mode: screen;
+  animation: lights-up 900ms ease-out both;
+}
+.error { background-image: var(--error-wash, linear-gradient(#0d081477, #0d0814c7)), var(--result-art); }
+.partners {
+  position: relative;
+  display: flex; align-items: center; gap: 1em;
+  color: #f2edf7;
+  font: 600 max(.78rem, 2.3cqi)/1.4 var(--font-interface);
+}
+.partners span { width: 1px; height: 1em; background: #a196ac; }
+.stage h1 {
+  position: relative;
+  margin: 0 auto;
+  font: 700 clamp(3rem, 16cqi, 11rem)/.87 var(--font-display);
+  max-width: 7ch;
+  letter-spacing: -.02em;
+}
+.stage h1::after { content: ""; display: block; margin: .25em auto 0; width: .52em; height: 2px; background: var(--accent-highlight); }
+.errorCopy p { margin: 1.4em auto 0; max-width: 34ch; color: var(--soft-ink, #f0e7f6); font: 500 clamp(.95rem, 2.8cqi, 1.7rem)/1.45 var(--font-interface); }
+.actions { position: relative; display: grid; gap: .35rem; width: min(100%, 74cqi); max-width: 440px; margin-inline: auto; }
+.secondary {
+  justify-self: center;
+  min-height: 48px;
+  padding-inline: 1.2rem;
+  background: transparent;
+  color: var(--soft-ink, #f3e8fa);
+  border: 0;
+  font-family: var(--font-button, "Montserrat", "Outfit", sans-serif);
+  font-weight: 700;
+  font-size: max(1.15rem, 3cqi);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+@keyframes lights-up { from { opacity: .2; } to { opacity: .52; } }
+@media (max-aspect-ratio: 9/16) { .stage { min-height: 100svh; } }
+@media (prefers-reduced-motion: reduce) { .lights { animation: none; } }

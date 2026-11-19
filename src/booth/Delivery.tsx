@@ -1,0 +1,208 @@
+import Image from "next/image";
+import { PartyButton, PartyLink } from "../design/PartyButton";
+import { useEffect, useState, type Dispatch } from "react";
+import { forgetCapture, readCapture, type Attempt } from "./capture-resume";
+import type { BoothEvent, BoothState } from "./flow";
+import type { FailureReason } from "./failure";
+import { BrandHeader } from "./BrandHeader";
+import { TicketCard } from "./TicketCard";
+import { SaveButton } from "../design/SaveButton";
+import styles from "./Delivery.module.css";
+
+type Stage = "processing" | "result" | "qr";
+type JobStatus = {
+  status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED" | "TIMED_OUT";
+  mock: boolean;
+  canRecover: boolean;
+  rateLimited: boolean;
+  failureStage: "generation" | "export" | null;
+};
+type Link = { url: string; qr: string | null; idleSeconds: number; expiresAt?: number };
+
+function focus(node: HTMLHeadingElement | null) { node?.focus(); }
+
+export function Delivery({ state, attempt, dispatch, reset }: {
+  state: Extract<BoothState, { stage: Stage }>;
+  attempt: Attempt;
+  dispatch: Dispatch<BoothEvent>;
+  reset: () => void;
+}) {
+  const [photo, setPhoto] = useState<string>();
+  const [link, setLink] = useState<Link>();
+  const [mock, setMock] = useState(false);
+  const { stage } = state;
+  const { jobId, owner, sessionId, consentAt, styleId } = attempt;
+  const endpoint = "/api/booth/" + jobId;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const headers = { Authorization: "Bearer " + owner };
+    let objectUrl: string | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const fail = (reason: FailureReason) => {
+      if (!signal.aborted) dispatch({ type: "fail", reason });
+    };
+    const request = (resource: string, options: RequestInit = {}, milliseconds = 8_000) =>
+      fetch(endpoint + resource, { ...options, headers: { ...headers, ...options.headers },
+        signal: AbortSignal.any([signal, AbortSignal.timeout(milliseconds)]) });
+    async function poll() {
+      let misses = 0;
+      while (!signal.aborted) {
+        try {
+          if (!navigator.onLine) { fail("offline"); return; }
+          let response = await request("");
+          if (response.status === 404) {
+            const capture = await readCapture(jobId);
+            if (!capture) { fail("capture-missing"); return; }
+            response = await request("", { method: "POST", body: capture, headers: {
+              "Content-Type": "image/jpeg", "X-Booth-Session": sessionId,
+              "X-Booth-Consent": consentAt, "X-Booth-Style": styleId,
+            } }, 20_000);
+          }
+          if (response.status === 400 || response.status === 409) {
+            fail("capture-missing");
+            return;
+          }
+          if (!response.ok) throw new Error("Job unavailable.");
+          const current = await response.json() as JobStatus;
+          if (signal.aborted) return;
+          setMock(current.mock);
+          void forgetCapture(jobId);
+          if (current.status === "SUCCEEDED") {
+            dispatch({ type: "generated", jobId, resultId: jobId });
+            return;
+          }
+          if (current.status === "FAILED" || current.status === "TIMED_OUT") {
+            fail(current.rateLimited ? "rate-limit" : current.canRecover ? "export" :
+              current.status === "TIMED_OUT" ? "generation-timeout" : "generation");
+            return;
+          }
+          misses = 0;
+        } catch {
+          if (++misses >= 4) {
+            fail("offline");
+            return;
+          }
+        }
+        await new Promise<void>(resolve => {
+          const wake = () => { signal.removeEventListener("abort", wake); clearTimeout(timer); resolve(); };
+          timer = setTimeout(wake, 800);
+          signal.addEventListener("abort", wake, { once: true });
+          if (signal.aborted) wake();
+        });
+      }
+    }
+    async function getLink() {
+      try {
+        if (!navigator.onLine) { fail("offline"); return; }
+        const response = await request("/link", { method: "POST" });
+        if (response.status === 404 || response.status === 410) { fail("link-expired"); return; }
+        if (!response.ok) { fail("link"); return; }
+        const value = await response.json() as Link;
+        if (signal.aborted) return;
+        if (!value.url || !Number.isFinite(value.idleSeconds)) { fail("link"); return; }
+        const lifetime = value.expiresAt === undefined ? Infinity : value.expiresAt - Date.now();
+        if (lifetime <= 0) { fail("link-expired"); return; }
+        setLink(value);
+        // Keep screen active until guest explicitly taps DONE or START OVER
+      } catch { fail(navigator.onLine ? "link" : "offline"); }
+    }
+    async function getPhoto() {
+      try {
+        if (!navigator.onLine) { fail("offline"); return; }
+        const response = await request("/portrait");
+        if (!response.ok) throw new Error("Photo unavailable.");
+        const blob = await response.blob();
+        if (signal.aborted) return;
+        objectUrl = URL.createObjectURL(blob);
+        setPhoto(objectUrl);
+        // Trigger punch animation & bouncing photo on secondary display
+        const photoPath = `/api/display/photo?t=${Date.now()}`;
+        fetch("/api/display", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "photo", photoUrl: photoPath, jobId }),
+        }).catch(() => {});
+        try {
+          const bc = new BroadcastChannel("do_booth_display");
+          bc.postMessage({ status: "photo", photoUrl: photoPath, jobId });
+          bc.close();
+        } catch {}
+      } catch { fail(navigator.onLine ? "result" : "offline"); }
+    }
+    if (stage === "processing") void poll();
+    if (stage === "result") void getPhoto();
+    if (stage === "qr") void getLink();
+    function release() {
+      controller.abort();
+      clearTimeout(timer);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+    window.addEventListener("pagehide", release);
+    return () => { window.removeEventListener("pagehide", release); release(); };
+  }, [stage, endpoint, jobId, owner, sessionId, consentAt, styleId, dispatch]);
+
+  return (
+    <section className={`booth-stage ${styles.stage}`} data-stage={stage}>
+      <BrandHeader />
+      {stage === "processing" && <>
+        <div className={styles.processing}>
+          <div className={styles.vinyl} aria-hidden="true"><i /></div>
+          <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
+        </div>
+        <p className={styles.sub} role="status">CREATING YOUR LOOK</p>
+      </>}
+      {stage === "result" && <>
+        <h1 ref={focus} tabIndex={-1}>YOUR LOOK</h1>
+        <div className={styles.portrait}>
+          {photo && <Image src={photo} unoptimized width={1024} height={1024} alt="Your caricature portrait" />}
+          {mock && <span>DEVELOPMENT SAMPLE</span>}
+        </div>
+        <footer className={styles.actions}>
+          <SaveButton
+            label="GET MY PHOTO"
+            savedLabel="OPENING PASS…"
+            disabled={!photo}
+            onClick={() => {
+              setTimeout(() => {
+                setPhoto(undefined);
+                setLink(undefined);
+                dispatch({ type: "open-qr" });
+              }, 450);
+            }}
+          />
+          <button className={styles.secondary} onClick={reset}>START OVER</button>
+        </footer>
+      </>}
+      {stage === "qr" && <>
+        <h1 ref={focus} tabIndex={-1}>SCAN &amp; SAVE</h1>
+        {link?.qr ? (
+          <TicketCard
+            qr={link.qr}
+            passNumber={`#DO-${jobId.slice(0, 4).toUpperCase()}`}
+            dateText="DO HOTELS × ONE"
+            title="VIP PASS"
+            subtitle="Scan to save your photo"
+          />
+        ) : link ? (
+          <div className={styles.qr}>
+            <div className={styles.local}>
+              <p>NONPUBLIC DEVELOPMENT PREVIEW</p>
+              <PartyLink variant="orange" icon="scan" size="compact" href={link.url} target="_blank" rel="noreferrer">
+                Open local download preview
+              </PartyLink>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.qr}>
+            <p role="status">Preparing link…</p>
+          </div>
+        )}
+        <footer className={styles.actions}>
+          <PartyButton variant="outline" onClick={() => dispatch({ type: "done" })}>DONE</PartyButton>
+        </footer>
+      </>}
+    </section>
+  );
+}

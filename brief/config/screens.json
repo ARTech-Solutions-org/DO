@@ -1,0 +1,79 @@
+{
+  "displayReference": {
+    "width": 1080,
+    "height": 1920,
+    "orientation": "portrait",
+    "confirmed": false
+  },
+  "screenCount": 9,
+  "states": [
+    {
+      "id": "welcome",
+      "name": "Welcome",
+      "originalMockupIndex": 1
+    },
+    {
+      "id": "choose-style",
+      "name": "Choose Your Style",
+      "originalMockupIndex": 3
+    },
+    {
+      "id": "camera",
+      "name": "Camera",
+      "originalMockupIndex": 5
+    },
+    {
+      "id": "countdown",
+      "name": "Countdown",
+      "originalMockupIndex": 6
+    },
+    {
+      "id": "processing",
+      "name": "AI Processing",
+      "originalMockupIndex": 8
+    },
+    {
+      "id": "result",
+      "name": "Final Result",
+      "originalMockupIndex": 9
+    },
+    {
+      "id": "qr",
+      "name": "QR Download",
+      "originalMockupIndex": 10
+    },
+    {
+      "id": "thank-you",
+      "name": "Thank You",
+      "originalMockupIndex": 11
+    },
+    {
+      "id": "error",
+      "name": "Error & Retry",
+      "originalMockupIndex": 12
+    }
+  ],
+  "standardFlow": [
+    "welcome",
+    "choose-style",
+    "camera",
+    "countdown",
+    "processing",
+    "result",
+    "qr",
+    "thank-you",
+    "welcome"
+  ],
+  "errorState": "error",
+  "excluded": [
+    "how-it-works",
+    "style-preview",
+    "review-retake"
+  ],
+  "durations": {
+    "countdownSeconds": 3,
+    "thankYouSeconds": 6,
+    "qrIdleSeconds": 60,
+    "resultRetentionHoursProposed": 24
+  }
+}

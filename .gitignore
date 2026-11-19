@@ -1,0 +1,74 @@
+# Dependencies and build outputs
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+.vercel/
+
+# Environment files & credentials (NEVER commit real keys)
+.env
+.env.*
+.env.local
+.env*.local
+!.env.example
+
+# Certificates, TLS keys, and secrets
+certificates/
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+
+# Android APKs and build outputs (Strictly excluded from GitHub)
+*.apk
+*.aab
+**/*.apk
+**/*.aab
+DO_PhotoBooth_Kiosk.apk
+public/DO_PhotoBooth_Kiosk.apk
+.gradle/
+android-kiosk/.gradle/
+android-kiosk/.kotlin/
+android-kiosk/build/
+android-kiosk/app/build/
+android-kiosk/local.properties
+android-kiosk/.idea/
+android-kiosk/*.iml
+android-kiosk/app/*.iml
+
+# Captured or generated guest material stays outside source control
+photos/
+captures/
+uploads/
+results/
+guest-data/
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.heic
+*.heif
+*.avif
+*.cr3
+
+# Whitelisted production design references & curated artwork
+!brief/references/**/*.png
+!brief/references/**/*.jpg
+!public/artwork/**
+!public/cd-welcome.png
+!public/cd (1).png
+!docs/visual-proofs/reference-pairs.webp
+!docs/visual-proofs/layers-and-type.webp
+!artifacts/qa/03-welcome/welcome-1080x1920.png
+!artifacts/qa/03-welcome/welcome-390x844.png
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+*.log
+__pycache__/
+*.pyc
+*.pyo

@@ -1,0 +1,2 @@
+# Client voice note — designer transcript supplied in conversation (abridged, not machine-verified)
+ONE should be presented primarily in **purple**, as it is the main color. DO may appear in **black**, or **orange** if it feels cohesive. Some brand applications have purple+black; others purple+orange, and the client is comfortable with those combinations. Preserve the official brand logo variants according to supplied manuals.

@@ -1,0 +1,12 @@
+{
+  "confirmedStyles": [
+    {
+      "id": "caricature",
+      "label": "Caricature",
+      "enabled": true,
+      "apiPromptTemplate": "Edit the provided consenting guest portrait into a premium editorial caricature with intentional flattering proportional exaggeration, preserve overall likeness, expression and skin tone, add tasteful event lighting; no new people, no text, no logo."
+    }
+  ],
+  "unconfirmedStyles": [],
+  "allowFutureCatalogExpansion": true
+}
