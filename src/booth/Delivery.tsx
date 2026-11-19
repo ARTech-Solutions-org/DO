@@ -73,31 +73,40 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           setMock(current.mock);
           if (current.status === "SUCCEEDED") {
             void forgetCapture(jobId);
-            if (styleId === "caricature" && canvasRef.current) {
+            if (styleId === "caricature") {
               try {
-                const photoRes = await request("/portrait", {}, 20_000);
-                if (photoRes.ok) {
-                  const blob = await photoRes.blob();
-                  const url = URL.createObjectURL(blob);
-                  objectUrl = url;
-                  setPhoto(url);
+                let canvas = canvasRef.current;
+                if (!canvas) {
+                  for (let r = 0; r < 10 && !canvas; r++) {
+                    await new Promise(res => setTimeout(res, 100));
+                    canvas = canvasRef.current;
+                  }
+                }
+                if (canvas) {
+                  const photoRes = await request("/portrait", {}, 20_000);
+                  if (photoRes.ok) {
+                    const blob = await photoRes.blob();
+                    const url = URL.createObjectURL(blob);
+                    objectUrl = url;
+                    setPhoto(url);
 
-                  const img = new window.Image();
-                  img.src = url;
-                  await new Promise((resolve) => {
-                    img.onload = resolve;
-                    img.onerror = resolve;
-                  });
-
-                  if (!signal.aborted && canvasRef.current) {
-                    const animator = new Animator(canvasRef.current);
-                    animatorRef.current = animator;
-                    await animator.run({
-                      resultPromise: Promise.resolve(img),
-                      onStage: (st: string) => {
-                        if (!signal.aborted) setDrawingStage(st);
-                      },
+                    const img = new window.Image();
+                    img.src = url;
+                    await new Promise((resolve) => {
+                      img.onload = resolve;
+                      img.onerror = resolve;
                     });
+
+                    if (!signal.aborted && canvas) {
+                      const animator = new Animator(canvas);
+                      animatorRef.current = animator;
+                      await animator.run({
+                        resultPromise: Promise.resolve(img),
+                        onStage: (st: string) => {
+                          if (!signal.aborted) setDrawingStage(st);
+                        },
+                      });
+                    }
                   }
                 }
               } catch (animErr) {
@@ -210,7 +219,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
                 height={1024}
                 className={styles.sketchCanvas}
               />
-              {drawingStage === "wait" && (
+              {(drawingStage === "wait" || drawingStage === "sketch") && (
                 <div className={styles.processing} style={{ position: "absolute", inset: 0 }}>
                   <div className={styles.vinyl} aria-hidden="true"><i /></div>
                   <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
@@ -225,7 +234,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           )}
           <p className={styles.sub} role="status">
             {styleId === "caricature"
-              ? drawingStage === "wait"
+              ? drawingStage === "wait" || drawingStage === "sketch"
                 ? "CREATING YOUR CARICATURE…"
                 : drawingStage === "redraw"
                 ? "INKING DETAILS & OUTLINES…"

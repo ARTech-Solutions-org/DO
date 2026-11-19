@@ -12,9 +12,9 @@ export const SKETCH_CONFIG = {
     sketchDuration: 3000,
     minBeforeRedraw: 3000,
     hatchDuration: 4000,
-    redrawDuration: 4000,
-    colorDuration: 3500,
-    finalFade: 700,
+    redrawDuration: 5500,
+    colorDuration: 5000,
+    finalFade: 900,
   },
   colors: {
     paper: '#faf4ed',
@@ -28,6 +28,7 @@ export const SKETCH_CONFIG = {
   },
 };
 
+export const CONFIG = SKETCH_CONFIG;
 const { anim, colors, brush } = SKETCH_CONFIG;
 /* ----------------------------- helpers ----------------------------- */
 
@@ -669,7 +670,7 @@ export class Animator {
   render({ colorOn, finalA, now, tipLayer, tipCol }) {
     const { ctx, W, H } = this;
     ctx.globalAlpha = 1;
-    ctx.fillStyle = CONFIG.colors?.paper || '#faf4ed';
+    ctx.fillStyle = colors?.paper || CONFIG.colors?.paper || '#faf4ed';
     ctx.fillRect(0, 0, W, H);
 
     if (this.resultReady && colorOn) ctx.drawImage(this.colorC, 0, 0);
