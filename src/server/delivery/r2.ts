@@ -127,6 +127,14 @@ export function getPresignedDownloadUrl(
   expiresInSeconds = 604800, // 7 days
   downloadFilename = "do-hotels-caricature.png"
 ): string | null {
+  return presignRead("GET", key, expiresInSeconds, downloadFilename);
+}
+
+export function getPresignedMetadataUrl(key: string, expiresInSeconds: number) {
+  return presignRead("HEAD", key, expiresInSeconds);
+}
+
+function presignRead(method: "GET" | "HEAD", key: string, expiresInSeconds: number, downloadFilename?: string) {
   const config = getR2Config();
   if (!config) return null;
 
@@ -135,7 +143,6 @@ export function getPresignedDownloadUrl(
   const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
   const dateStamp = amzDate.slice(0, 8);
 
-  const method = "GET";
   const canonicalUri = `/${bucket}/${uriEncodePath(key)}`;
   const algorithm = "AWS4-HMAC-SHA256";
   const credentialScope = `${dateStamp}/${region}/s3/aws4_request`;
@@ -147,7 +154,7 @@ export function getPresignedDownloadUrl(
     "X-Amz-Date": amzDate,
     "X-Amz-Expires": expiresInSeconds.toString(),
     "X-Amz-SignedHeaders": "host",
-    "response-content-disposition": `inline; filename="${downloadFilename}"`,
+    ...(downloadFilename ? { "response-content-disposition": `inline; filename="${downloadFilename}"` } : {}),
   };
 
   const canonicalQuery = Object.keys(queryParams)

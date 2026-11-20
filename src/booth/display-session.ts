@@ -35,7 +35,7 @@ function publish(event: EventData, photo?: Blob) {
           headers: { "Content-Type": photo ? "image/jpeg" : "application/json",
             "X-Display-Job": event.jobId, "X-Display-Time": String(event.updatedAt) },
           body,
-          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]) });
+          signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]) });
         if (response.ok && event.status === "idle") {
           try { if (sessionStorage.getItem(key) === event.jobId) sessionStorage.removeItem(key); } catch { /* Storage unavailable. */ }
         }

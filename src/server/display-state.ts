@@ -1,5 +1,5 @@
 import "server-only";
-import { getPresignedDownloadUrl, getR2Config, uploadToR2 } from "./delivery/r2";
+import { getPresignedDownloadUrl, getPresignedMetadataUrl, getR2Config, uploadToR2 } from "./delivery/r2.ts";
 
 type DisplayState = { jobId?: string; status: "idle" | "photo"; updatedAt: number };
 const initial: DisplayState = { status: "idle", updatedAt: 0 };
@@ -14,9 +14,8 @@ function remote() {
 }
 
 async function current() {
-  const url = getPresignedDownloadUrl(slot, 60)!;
-  const response = await fetch(url, { headers: { Range: "bytes=0-0" }, cache: "no-store" });
-  await response.body?.cancel();
+  const url = getPresignedMetadataUrl(slot, 60)!;
+  const response = await fetch(url, { method: "HEAD", cache: "no-store", signal: AbortSignal.timeout(10_000) });
   if (response.status === 404) return { state: initial, etag: null };
   if (!response.ok) throw new Error("Cannot read display state");
   const state: DisplayState = {
@@ -59,7 +58,8 @@ export async function readDisplayPhoto(id: string) {
     return record?.state.jobId === id && record.photo ? new Uint8Array(record.photo) : null;
   }
   const response = await fetch(getPresignedDownloadUrl(slot, 60)!, { cache: "no-store" });
-  if (!response.ok || response.headers.get("x-amz-meta-job") !== id || response.headers.get("x-amz-meta-status") !== "photo") {
+  if (response.status !== 404 && !response.ok) throw new Error("Cannot read display photo");
+  if (response.status === 404 || response.headers.get("x-amz-meta-job") !== id || response.headers.get("x-amz-meta-status") !== "photo") {
     await response.body?.cancel();
     return null;
   }

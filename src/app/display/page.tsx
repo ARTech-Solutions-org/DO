@@ -26,7 +26,7 @@ export default function SecondaryDisplay() {
     const controller = new AbortController();
     let lastUpdate = -Infinity;
     let revision = 0;
-    let polling = false;
+    let pending: AbortController | undefined;
     let localUrl: string | undefined;
     function receive(data: Update) {
       if (controller.signal.aborted || !data) return;
@@ -55,22 +55,25 @@ export default function SecondaryDisplay() {
     const channel = typeof BroadcastChannel === "function" ? new BroadcastChannel("do_booth_display") : null;
     if (channel) channel.onmessage = event => receive(event.data);
     async function poll() {
-      if (polling) return;
-      polling = true;
+      if (pending) return;
+      const request = new AbortController();
+      pending = request;
+      const timeout = setTimeout(() => request.abort(), 15_000);
       const startedAt = revision;
       try {
-        const response = await fetch("/api/display", { cache: "no-store", signal: controller.signal });
+        const response = await fetch("/api/display", { cache: "no-store", signal: request.signal });
         if (response.ok) {
           const update: Update = await response.json();
           if (revision === startedAt) receive(update);
         }
       } catch { /* The next poll can recover a dropped connection. */ }
-      finally { polling = false; }
+      finally { clearTimeout(timeout); pending = undefined; }
     }
     void poll();
     const interval = setInterval(poll, 800);
     return () => {
       controller.abort();
+      pending?.abort();
       clearInterval(interval);
       channel?.close();
       if (localUrl) URL.revokeObjectURL(localUrl);
