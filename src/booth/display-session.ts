@@ -29,11 +29,13 @@ function publish(event: EventData, photo?: Blob) {
   pending = controller;
   async function sync() {
     const body = photo ? await preview(photo).catch(() => photo) : JSON.stringify({ status: "idle" });
+    const headers: Record<string, string> = { "Content-Type": body instanceof Blob ? body.type : "application/json",
+      "X-Display-Job": event.jobId, "X-Display-Time": String(event.updatedAt) };
+    if (photo) headers["X-Display-Source"] = "result";
     for (let tries = 0; !controller.signal.aborted; tries++) {
       try {
         const response = await fetch("/api/display", { method: "POST",
-          headers: { "Content-Type": photo ? "image/jpeg" : "application/json",
-            "X-Display-Job": event.jobId, "X-Display-Time": String(event.updatedAt) },
+          headers,
           body,
           signal: AbortSignal.any([controller.signal, AbortSignal.timeout(30_000)]) });
         if (response.ok && event.status === "idle") {
@@ -52,7 +54,8 @@ function timestamp() {
   return lastTime;
 }
 
-export function displayCapture(jobId: string, photo: Blob) {
+export function displayResult(jobId: string, photo: Blob) {
+  if (activeId === jobId) return;
   activeId = jobId;
   try { sessionStorage.setItem(key, jobId); } catch { /* In-memory fallback. */ }
   publish({ jobId, status: "photo", updatedAt: timestamp() }, photo);

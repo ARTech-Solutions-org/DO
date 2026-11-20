@@ -7,6 +7,7 @@ import type { FailureReason } from "./failure";
 import { BrandHeader } from "./BrandHeader";
 import { TicketCard } from "./TicketCard";
 import { SaveButton } from "../design/SaveButton";
+import { displayResult } from "./display-session";
 import { Animator } from "./sketch";
 import styles from "./Delivery.module.css";
 
@@ -86,6 +87,8 @@ export function Delivery({ state, attempt, dispatch, reset }: {
                   const photoRes = await request("/portrait", {}, 20_000);
                   if (photoRes.ok) {
                     const blob = await photoRes.blob();
+                    if (signal.aborted) return;
+                    displayResult(jobId, blob);
                     const url = URL.createObjectURL(blob);
                     objectUrl = url;
                     setPhoto(url);
@@ -171,6 +174,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           if (signal.aborted) return;
           objectUrl = URL.createObjectURL(blob);
           setPhoto(objectUrl);
+          displayResult(jobId, blob);
           return;
         } catch {
           if (++attempts >= 3) {
@@ -236,7 +240,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
       {stage === "result" && <>
         <h1 ref={focus} tabIndex={-1}>YOUR LOOK</h1>
         <div className={styles.portrait}>
-          {photo && <Image src={photo} unoptimized width={1024} height={1024} alt="Your caricature portrait" />}
+          {photo && <Image src={photo} unoptimized width={1024} height={1024} alt={styleId === "lidar" ? "Your LiDAR portrait" : "Your caricature portrait"} />}
           {mock && <span>DEVELOPMENT SAMPLE</span>}
         </div>
         <footer className={styles.actions}>

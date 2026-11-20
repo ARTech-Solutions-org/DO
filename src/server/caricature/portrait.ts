@@ -15,6 +15,20 @@ export async function preparePortrait(photo: Blob) {
     fit: "inside", withoutEnlargement: true }).toColourspace("srgb").jpeg({ quality: 90 }).toBuffer();
 }
 
+// Laser returns can be sparse, translucent and touch the frame.
+export async function compositeLidar(layer: Buffer): Promise<Blob> {
+  if (layer.length > 16 * 1024 * 1024) throw new Error("Oversized provider image.");
+  const input = sharp(layer, { limitInputPixels: 32_000_000 });
+  const meta = await input.metadata();
+  if (!["jpeg", "webp", "png"].includes(meta.format) || (meta.pages ?? 1) !== 1) {
+    throw new Error("Expected a single LiDAR image.");
+  }
+  const background = { r: 5, g: 4, b: 10 };
+  const png = await input.autoOrient().toColourspace("srgb").flatten({ background })
+    .resize(outputSize, outputSize, { fit: "contain", background }).removeAlpha().png().toBuffer();
+  return new Blob([new Uint8Array(png)], { type: "image/png" });
+}
+
 export async function compositePortrait(
   layer: Buffer,
   background: readonly [number, number, number] = purple

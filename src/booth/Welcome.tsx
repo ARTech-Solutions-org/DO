@@ -5,7 +5,7 @@ import { PartyButton } from "../design/PartyButton";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Camera } from "./Camera";
-import { clearDisplayedCapture, displayCapture } from "./display-session";
+import { clearDisplayedCapture } from "./display-session";
 import { Delivery } from "./Delivery";
 import { attemptPointer, bufferCapture, clearAttempt, forgetCapture, newOwner, type Attempt } from "./capture-resume";
 import { boothConfig } from "./config";
@@ -120,7 +120,6 @@ export function Welcome({ thankYouSeconds = boothConfig.thankYouSeconds }: { tha
       try {
         await bufferCapture(next, photo);
         if (signal.aborted) { clearAttempt(next.jobId); capturing.current = false; return; }
-        displayCapture(next.jobId, photo);
         setAttempt(next);
         dispatch({ type: "captured", jobId: next.jobId });
       } catch {

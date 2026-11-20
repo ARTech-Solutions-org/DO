@@ -6,7 +6,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { createCaricatureAdapter, promptForStyle } from "../src/server/caricature/index.ts";
 import { mockSubjectLayer } from "../src/server/caricature/mock.ts";
-import { compositePortrait, preparePortrait } from "../src/server/caricature/portrait.ts";
+import { compositeLidar, compositePortrait, preparePortrait } from "../src/server/caricature/portrait.ts";
 import { MemoryJobRepository, processGeneration } from "../src/server/jobs.ts";
 
 async function fixture() {
@@ -64,6 +64,17 @@ test("fails closed for opaque green, empty alpha, bad dimensions and a padded fr
   const border = await sharp(await mockSubjectLayer()).composite([{ input: {
     create: { width: 1, height: 1, channels: 4, background: "#ffffff" } }, left: 0, top: 0 }]).png().toBuffer();
   await assert.rejects(compositePortrait(border), /padding/);
+});
+
+test("LiDAR preserves sparse translucent returns at the edge and fits the complete scan", async () => {
+  const rgba = Buffer.alloc(80 * 100 * 4);
+  rgba.set([245, 95, 55, 128], 0);
+  const layer = await sharp(rgba, { raw: { width: 80, height: 100, channels: 4 } }).png().toBuffer();
+  const result = await compositeLidar(layer);
+  const { data, info } = await sharp(Buffer.from(await result.arrayBuffer())).raw().toBuffer({ resolveWithObject: true });
+  assert.deepEqual([info.width, info.height, info.channels], [1024, 1024, 3]);
+  assert.deepEqual([...data.subarray(0, 3)], [5, 4, 10]);
+  assert.ok(data.some((value, index) => index % 3 === 0 && value > 90));
 });
 
 test("mock runs through job reservation and result storage without network", async () => {

@@ -1,7 +1,7 @@
 import "server-only";
 import type { ImageEditAdapter } from "../ports.ts";
 import { mockSubjectLayer } from "./mock.ts";
-import { compositePortrait, preparePortrait } from "./portrait.ts";
+import { compositeLidar, compositePortrait, preparePortrait } from "./portrait.ts";
 
 export const CARICATURE_PROMPT = `Transform the person in the uploaded photo into a highly stylized, exaggerated professional caricature, using the attached reference image ONLY as the visual style reference.
 
@@ -123,9 +123,9 @@ export function createCaricatureAdapter(settings: Settings = {
     async edit(request, signal) {
       const prompt = promptForStyle(request.styleId);
       const portrait = await preparePortrait(request.photo);
-      const bg = request.styleId === "lidar" ? ([5, 4, 10] as const) : ([150, 107, 252] as const);
+      const compose = request.styleId === "lidar" ? compositeLidar : compositePortrait;
       signal?.throwIfAborted();
-      if (provider === "mock") return compositePortrait(await mockSubjectLayer(), bg);
+      if (provider === "mock") return compose(await mockSubjectLayer());
 
       let imageBuffer: Buffer | null = null;
 
@@ -133,10 +133,9 @@ export function createCaricatureAdapter(settings: Settings = {
       if (apiKey) {
         try {
           const form = new FormData();
-          const ext = request.photo.type === "image/png" ? "png" : request.photo.type === "image/webp" ? "webp" : "jpg";
           const blob = new Blob([new Uint8Array(portrait)], { type: "image/jpeg" });
           form.append("model", model);
-          form.append("image", blob, `photo.${ext}`);
+          form.append("image", blob, "photo.jpg");
           form.append("prompt", prompt);
           form.append("size", "1024x1024");
 
@@ -197,7 +196,7 @@ export function createCaricatureAdapter(settings: Settings = {
         throw new Error("Image edit failed on both OpenAI and Gemini providers.");
       }
 
-      return compositePortrait(imageBuffer, bg);
+      return compose(imageBuffer);
     },
   };
 }

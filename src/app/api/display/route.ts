@@ -19,11 +19,15 @@ export async function POST(request: Request) {
   }
   let photo: Buffer | undefined;
   try {
-    if (request.headers.get("content-type") === "image/jpeg") {
+    const mime = request.headers.get("content-type");
+    if (mime === "image/png" || mime === "image/webp" || mime === "image/jpeg") {
+      if (request.headers.get("x-display-source") !== "result") return new Response(null, { status: 400 });
       const bytes = Buffer.from(await request.arrayBuffer());
       if (bytes.length > 4_400_000) return new Response(null, { status: 413 });
-      if (bytes[0] !== 255 || bytes[1] !== 216) return new Response(null, { status: 400 });
-      photo = await sharp(bytes, { limitInputPixels: 24000000 }).rotate().resize({ width: 1000, height: 1000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86 }).toBuffer();
+      const input = sharp(bytes, { limitInputPixels: 24000000 });
+      const meta = await input.metadata();
+      if (mime !== "image/" + meta.format || (meta.pages ?? 1) !== 1) return new Response(null, { status: 400 });
+      photo = await input.rotate().resize({ width: 1000, height: 1000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86 }).toBuffer();
     } else if ((await request.json()).status !== "idle") return new Response(null, { status: 400 });
   } catch { return new Response(null, { status: 400 }); }
   try {

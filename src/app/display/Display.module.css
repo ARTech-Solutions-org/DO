@@ -5,8 +5,7 @@
   isolation: isolate;
   background: #0b090e center / cover no-repeat var(--result-art, url("/artwork/web/result-ground-full.webp"));
   --card: min(22vmin, 230px);
-  --card-width: calc(var(--card) * .8);
-  --travel-x: calc(100vw - var(--card-width));
+  --travel-x: calc(100vw - var(--card));
   --travel-y: calc(100dvh - var(--card));
   --intro: 2.45s;
 }
@@ -25,7 +24,7 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: var(--card-width);
+  width: var(--card);
   height: var(--card);
 }
 .horizontal { transform: translateX(calc(var(--travel-x) / 2)); }
