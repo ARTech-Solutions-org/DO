@@ -9,13 +9,11 @@ type Photo = { id: string; url: string };
 
 function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
   const [ready, setReady] = useState(false);
-  return <div className={styles.horizontal} data-ready={ready}>
-    <div className={styles.vertical}>
+  return <div className={styles.photoFrame} data-ready={ready}>
       {/* Display events supply the image URL at runtime. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={photo.url} alt="Guest portrait" className={styles.portrait}
         onLoad={() => setReady(true)} onError={onError} />
-    </div>
   </div>;
 }
 
