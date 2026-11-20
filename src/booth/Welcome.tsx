@@ -5,6 +5,7 @@ import { PartyButton } from "../design/PartyButton";
 import { flushSync } from "react-dom";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Camera } from "./Camera";
+import { clearDisplayedCapture, displayCapture } from "./display-session";
 import { Delivery } from "./Delivery";
 import { attemptPointer, bufferCapture, clearAttempt, forgetCapture, newOwner, type Attempt } from "./capture-resume";
 import { boothConfig } from "./config";
@@ -57,17 +58,6 @@ export function Welcome({ thankYouSeconds = boothConfig.thankYouSeconds }: { tha
   const reset = useCallback(() => {
     returningToWelcome.current = true;
     dispatch({ type: "reset" });
-    // Reset secondary display back to logos
-    fetch("/api/display", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "idle" }),
-    }).catch(() => {});
-    try {
-      const bc = new BroadcastChannel("do_booth_display");
-      bc.postMessage({ status: "idle" });
-      bc.close();
-    } catch {}
   }, [dispatch]);
 
   useEffect(() => {
@@ -75,15 +65,23 @@ export function Welcome({ thankYouSeconds = boothConfig.thankYouSeconds }: { tha
       const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
       if (navigation?.type !== "reload") {
         clearAttempt();
+        clearDisplayedCapture();
         return;
       }
       const saved = attemptPointer();
+      if (!saved) clearDisplayedCapture();
       if (saved) {
         setAttempt(saved);
         send({ type: "resume-generation", ...saved });
       }
     });
   }, []);
+
+  const previousStage = useRef(state.stage);
+  useEffect(() => {
+    if (state.stage === "welcome" && previousStage.current !== "welcome") clearDisplayedCapture();
+    previousStage.current = state.stage;
+  }, [state.stage]);
 
   const starting = useRef(false);
   const handleStart = useCallback(() => {
@@ -122,6 +120,7 @@ export function Welcome({ thankYouSeconds = boothConfig.thankYouSeconds }: { tha
       try {
         await bufferCapture(next, photo);
         if (signal.aborted) { clearAttempt(next.jobId); capturing.current = false; return; }
+        displayCapture(next.jobId, photo);
         setAttempt(next);
         dispatch({ type: "captured", jobId: next.jobId });
       } catch {

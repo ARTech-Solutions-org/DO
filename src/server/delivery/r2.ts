@@ -52,6 +52,7 @@ export async function uploadToR2(params: {
   key: string;
   buffer: Buffer | Uint8Array;
   contentType: string;
+  headers?: Record<string, string>;
 }): Promise<string | null> {
   const config = getR2Config();
   if (!config) return null;
@@ -69,6 +70,7 @@ export async function uploadToR2(params: {
   const canonicalQuery = "";
 
   const headers: Record<string, string> = {
+    ...params.headers,
     "content-type": contentType,
     "host": host,
     "x-amz-content-sha256": payloadHash,

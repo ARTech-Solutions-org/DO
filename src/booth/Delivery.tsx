@@ -171,18 +171,6 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           if (signal.aborted) return;
           objectUrl = URL.createObjectURL(blob);
           setPhoto(objectUrl);
-          // Trigger punch animation & bouncing photo on secondary display
-          const photoPath = `/api/display/photo?t=${Date.now()}`;
-          fetch("/api/display", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: "photo", photoUrl: photoPath, jobId }),
-          }).catch(() => {});
-          try {
-            const bc = new BroadcastChannel("do_booth_display");
-            bc.postMessage({ status: "photo", photoUrl: photoPath, jobId });
-            bc.close();
-          } catch {}
           return;
         } catch {
           if (++attempts >= 3) {

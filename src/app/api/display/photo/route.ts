@@ -1,32 +1,13 @@
-import { NextResponse } from "next/server";
-import { getDisplayState } from "../../../../server/display-state";
-import { deliveryConfig } from "../../../../server/delivery/config";
-import { delivery } from "../../../../server/delivery/service";
-import { photoResponse } from "../../../../server/delivery/http";
+import { readDisplayPhoto } from "../../../../server/display-state";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const state = getDisplayState();
-  if (state.status !== "photo" || !state.jobId) {
-    return new NextResponse(null, { status: 404 });
-  }
-
-  const config = deliveryConfig();
-  if (!config) {
-    return new NextResponse(null, { status: 503 });
-  }
-
-  const service = delivery(config);
-  const job = await service.lookup(state.jobId);
-  if (!job) {
-    return new NextResponse(null, { status: 404 });
-  }
-
-  const photo = await service.photo(job);
-  if (!photo) {
-    return new NextResponse(null, { status: 404 });
-  }
-
-  return photoResponse(photo, false);
+export async function GET(request: Request) {
+  const id = new URL(request.url).searchParams.get("id");
+  const headers = { "Cache-Control": "private, no-store", "Content-Type": "image/jpeg" };
+  if (!id) return new Response(null, { status: 404, headers });
+  try {
+    const photo = await readDisplayPhoto(id);
+    return new Response(photo, { status: photo ? 200 : 404, headers });
+  } catch { return new Response(null, { status: 503, headers }); }
 }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import styles from "./Display.module.css";
 
-type Update = { status: "idle" | "photo"; photoUrl?: string; jobId?: string; updatedAt?: number };
+type Update = { status: "idle" | "photo"; photoUrl?: string; jobId?: string; updatedAt?: number; photo?: Blob };
 type Photo = { id: string; url: string };
 
 function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
@@ -27,6 +27,7 @@ export default function SecondaryDisplay() {
     let lastUpdate = -Infinity;
     let revision = 0;
     let polling = false;
+    let localUrl: string | undefined;
     function receive(data: Update) {
       if (controller.signal.aborted || !data) return;
       if (typeof data.updatedAt === "number") {
@@ -34,7 +35,17 @@ export default function SecondaryDisplay() {
         lastUpdate = data.updatedAt;
       }
       revision++;
-      if (data.status === "idle") setPhoto(null);
+      if (data.status === "idle") {
+        setPhoto(null);
+        if (localUrl) URL.revokeObjectURL(localUrl);
+        localUrl = undefined;
+      }
+      if (data.status === "photo" && data.photo instanceof Blob) {
+        if (localUrl) URL.revokeObjectURL(localUrl);
+        localUrl = URL.createObjectURL(data.photo);
+        setPhoto({ id: data.jobId!, url: localUrl });
+        return;
+      }
       if (data.status === "photo" && data.photoUrl) {
         const next = { id: data.jobId || data.photoUrl, url: data.photoUrl };
         setPhoto(previous => previous?.id === next.id ? previous : next);
@@ -43,10 +54,6 @@ export default function SecondaryDisplay() {
 
     const channel = typeof BroadcastChannel === "function" ? new BroadcastChannel("do_booth_display") : null;
     if (channel) channel.onmessage = event => receive(event.data);
-    const stream = typeof EventSource === "function" ? new EventSource("/api/display/stream") : null;
-    if (stream) stream.onmessage = event => {
-      try { receive(JSON.parse(event.data)); } catch { /* Incomplete stream message. */ }
-    };
     async function poll() {
       if (polling) return;
       polling = true;
@@ -66,7 +73,7 @@ export default function SecondaryDisplay() {
       controller.abort();
       clearInterval(interval);
       channel?.close();
-      stream?.close();
+      if (localUrl) URL.revokeObjectURL(localUrl);
     };
   }, []);
 
