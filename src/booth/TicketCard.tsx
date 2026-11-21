@@ -14,7 +14,7 @@ type TicketCardProps = {
 export function TicketCard({
   qr,
   passNumber = "#DO-VIP",
-  dateText = "DO HOTELS × ONE",
+  dateText = "ONE × DO HOTELS",
   title,
   subtitle = "Scan to save your photo",
 }: TicketCardProps) {

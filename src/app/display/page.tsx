@@ -10,10 +10,10 @@ type Photo = { id: string; url: string };
 function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
   const [ready, setReady] = useState(false);
   return <div className={styles.photoFrame} data-ready={ready}>
-      {/* Display events supply the image URL at runtime. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={photo.url} alt="Guest portrait" className={styles.portrait}
-        onLoad={() => setReady(true)} onError={onError} />
+    {/* Display events supply the image URL at runtime. */}
+    {/* eslint-disable-next-line @next/next/no-img-element */}
+    <img src={photo.url} alt="Guest portrait" className={styles.portrait}
+      onLoad={() => setReady(true)} onError={onError} />
   </div>;
 }
 
@@ -80,8 +80,8 @@ export default function SecondaryDisplay() {
 
   return <section className={styles.screen} aria-label="Event display">
     <div className={styles.logos}>
-      <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels" width={211} height={180} priority unoptimized />
       <Image src="/artwork/brand/one-development-logo.png" alt="ONE Development" width={440} height={309} priority unoptimized />
+      <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels" width={211} height={180} priority unoptimized />
     </div>
     {photo && <Portrait key={photo.id} photo={photo} onError={() =>
       setPhoto(current => current === photo ? null : current)} />}
