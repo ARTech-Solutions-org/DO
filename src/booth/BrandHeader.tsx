@@ -9,7 +9,7 @@ export function BrandHeader({ className }: { className?: string }) {
           src="/artwork/brand/do-hotels-header.png"
           alt="DO Hotels"
           width={211}
-          height={146}
+          height={180}
           className={styles.doLogo}
           priority
           unoptimized

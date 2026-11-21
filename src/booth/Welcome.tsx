@@ -158,7 +158,7 @@ export function Welcome({ thankYouSeconds = boothConfig.thankYouSeconds }: { tha
         <p className={styles.medium}>AI PHOTO BOOTH</p>
         <h1 className={styles.title} id="welcome-title">
           <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels"
-            width={211} height={146} unoptimized loading="eager" />
+            width={211} height={180} unoptimized loading="eager" />
         </h1>
       </div>
 

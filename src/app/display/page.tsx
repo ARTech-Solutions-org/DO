@@ -80,7 +80,7 @@ export default function SecondaryDisplay() {
 
   return <section className={styles.screen} aria-label="Event display">
     <div className={styles.logos}>
-      <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels" width={211} height={146} priority unoptimized />
+      <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels" width={211} height={180} priority unoptimized />
       <Image src="/artwork/brand/one-development-logo.png" alt="ONE Development" width={440} height={309} priority unoptimized />
     </div>
     {photo && <Portrait key={photo.id} photo={photo} onError={() =>
