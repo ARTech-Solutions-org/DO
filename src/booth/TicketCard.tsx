@@ -15,7 +15,7 @@ export function TicketCard({
   qr,
   passNumber = "#DO-VIP",
   dateText = "DO HOTELS × ONE",
-  title = "VIP PASS",
+  title,
   subtitle = "Scan to save your photo",
 }: TicketCardProps) {
   return (
@@ -25,10 +25,10 @@ export function TicketCard({
         <div className={styles.notes} aria-hidden="true">♪♪♪♪</div>
         <div className={styles.notes} aria-hidden="true">♪♪♪♪♪</div>
 
-        <div className={styles.header}>
+        {title && <div className={styles.header}>
           {title}
           <div className={styles.symbol} aria-hidden="true">✁</div>
-        </div>
+        </div>}
 
         <div className={styles.body}>
           <div className={styles.qrContainer}>

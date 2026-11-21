@@ -266,7 +266,6 @@ export function Delivery({ state, attempt, dispatch, reset }: {
             qr={link.qr}
             passNumber={`#DO-${jobId.slice(0, 4).toUpperCase()}`}
             dateText="DO HOTELS × ONE"
-            title="VIP PASS"
             subtitle="Scan to save your photo"
           />
         ) : link ? (

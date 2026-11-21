@@ -1,15 +1,23 @@
 """Exercise the booth and an independent event display against local next dev."""
 import io
 import os
+import tempfile
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageStat
+from PIL import Image, ImageChops, ImageOps, ImageStat
 from playwright.sync_api import expect, sync_playwright
 
 from camera_browser import MOCK
 
 BASE = "http://localhost:" + os.environ.get("BOOTH_TEST_PORT", "3001")
-FIXTURE = Path(__file__).resolve().parents[1] / "artifacts/qa/06-caricature/dry-run-purple.png"
+ROOT = Path(__file__).resolve().parents[1]
+FIXTURE = Path(tempfile.gettempdir()) / "do-booth-display-fixture.png"
+if not FIXTURE.exists():
+    with Image.open(ROOT / "public/artwork/masters/caricature-sample.png") as source:
+        portrait = Image.new("RGB", (1024, 1024), "#966BFC")
+        sample = ImageOps.contain(source.convert("RGB"), (900, 900))
+        portrait.paste(sample, ((1024 - sample.width) // 2, (1024 - sample.height) // 2))
+        portrait.save(FIXTURE)
 
 
 def test_display(style="lidar", fixture=FIXTURE):
@@ -60,7 +68,7 @@ def test_display(style="lidar", fixture=FIXTURE):
         stage["status"] = "SUCCEEDED"
         expect(screen.locator('[data-ready="true"]')).to_be_visible(timeout=45000)
         assert submitted == [style] and len(published) == 1
-        expect(screen.get_by_alt_text("DO Hotels").locator("..")).to_have_css("opacity", "0")
+        expect(screen.get_by_alt_text("DO Hotels").locator("..")).to_have_css("opacity", "0", timeout=5000)
         source = portrait.get_attribute("src")
         response = screen.request.get(BASE + source)
         assert response.headers["content-type"] == "image/jpeg"
@@ -79,15 +87,16 @@ def test_display(style="lidar", fixture=FIXTURE):
               return [r.x,r.y,r.width,r.height];
             }""", time)
 
-        x, y, w, h = rect(900)
-        assert abs(x + w / 2 - 192) < 1 and abs(y + h / 2 - 256) < 1
-        assert rect(2450)[2] < w / 2
-        right = rect(7200)
-        bottom = rect(13700)
-        assert abs(right[0] + right[2] - 384) < 1
-        assert abs(rect(6200)[1]) < 1 and abs(rect(16700)[0]) < 1
-        assert abs(bottom[1] + bottom[3] - 512) < 1
-        print("PASS", style, "generated image only, centered reveal, shrink and all four edges", flush=True)
+        x, y, w, h = rect(1500)
+        assert abs(x + w / 2 - 192) < 20 and abs(y + h / 2 - 256) < 20
+        assert w < 384 and h < 512
+        right = rect(3000)
+        left = rect(5100)
+        assert right[0] + right[2] / 2 > 192
+        assert left[0] + left[2] / 2 < 192
+        assert rect(10700)[2] < w / 2
+        assert rect(11000)[2] == 0
+        print("PASS", style, "centered portrait floats gently and shrinks away", flush=True)
         save = booth.locator('[data-stage="result"] button').filter(has=booth.locator("svg"))
         expect(save).to_be_enabled(timeout=120000)
         expect(portrait).to_have_attribute("src", source)
