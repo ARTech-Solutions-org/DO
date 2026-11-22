@@ -6,27 +6,94 @@
   background: #0b090e center / cover no-repeat var(--result-art, url("/artwork/web/result-ground-full.webp"));
 }
 
-.logos {
+.idleBranding {
   position: absolute;
   inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(22px, 5vmin, 72px);
-  transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+  animation: idleFadeIn 0.8s ease-out both;
 }
 
-.logos img {
-  display: block;
-  width: min(28vmin, 315px);
-  height: auto;
+@keyframes idleFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* While photo is active or drawing/processing, logos stay completely hidden */
-.screen[data-has-content="true"] .logos,
-.screen:has([data-ready="true"]) .logos {
-  opacity: 0;
+.screen[data-has-content="true"] .idleBranding,
+.screen:has([data-ready="true"]) .idleBranding {
+  display: none !important;
+}
+
+.oneLogoWrapper {
+  position: absolute;
+  top: clamp(28px, 6vh, 60px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.oneLogo {
+  display: block;
+  width: min(20vmin, 200px);
+  height: auto;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.65));
+  opacity: 0.95;
+}
+
+.doLogoWrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+  animation: doHeroBreathe 5.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.doGlowAura {
+  position: absolute;
+  width: min(58vmin, 620px);
+  height: min(58vmin, 620px);
+  background: radial-gradient(circle, rgba(195, 74, 255, 0.22) 0%, rgba(255, 176, 68, 0.1) 45%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(32px);
   pointer-events: none;
+  animation: doAuraPulse 5.4s ease-in-out infinite alternate;
+}
+
+.doLogo {
+  position: relative;
+  display: block;
+  width: min(44vmin, 460px);
+  height: auto;
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 24px rgba(255, 255, 255, 0.2));
+}
+
+@keyframes doHeroBreathe {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 20px rgba(195, 74, 255, 0.25));
+  }
+  50% {
+    transform: translate(-50%, -52%) scale(1.06);
+    filter: drop-shadow(0 14px 48px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 40px rgba(195, 74, 255, 0.5)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.35));
+  }
+}
+
+@keyframes doAuraPulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 }
 
 .photoFrame {
@@ -118,74 +185,6 @@
 
 .portrait[data-visible="true"] {
   opacity: 1;
-}
-
-.stageBadge {
-  display: none !important;
-  position: absolute;
-  bottom: clamp(-46px, -6vmin, -56px);
-  display: inline-flex;
-  align-items: center;
-  gap: clamp(8px, 1.2vmin, 14px);
-  padding: clamp(6px, 1vmin, 10px) clamp(16px, 2.5vmin, 26px);
-  background: rgba(14, 10, 22, 0.85);
-  border: 1px solid rgba(195, 74, 255, 0.35);
-  backdrop-filter: blur(12px);
-  border-radius: 9999px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(150, 107, 252, 0.2);
-  transition: all 0.5s ease;
-  z-index: 10;
-}
-
-.stageBadge[data-live="false"] {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
-}
-
-.stageBadge[data-style="lidar"] {
-  border-color: rgba(0, 255, 230, 0.4);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 255, 230, 0.25);
-}
-
-.stageBadge[data-style="lidar"] .pulseDot {
-  background: #00ffe6;
-  box-shadow: 0 0 10px #00ffe6;
-}
-
-.pulseDot {
-  width: clamp(7px, 1vmin, 10px);
-  height: clamp(7px, 1vmin, 10px);
-  border-radius: 50%;
-  background: #c34aff;
-  box-shadow: 0 0 10px #c34aff;
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
-.stageBadge[data-live="false"] .pulseDot {
-  background: #2dd4bf;
-  box-shadow: 0 0 8px #2dd4bf;
-  animation: none;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.35;
-    transform: scale(0.75);
-  }
-}
-
-.stageText {
-  font-family: var(--font-display, "Montserrat", sans-serif);
-  font-weight: 800;
-  font-size: clamp(0.78rem, 1.6vmin, 1.12rem);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #f8f4fb;
-  white-space: nowrap;
 }
 
 .processingBanner {

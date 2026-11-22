@@ -81,14 +81,14 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
           animatorRef.current = animator as unknown as Animator;
           await animator.run({
             resultPromise: Promise.resolve(img),
-            onStage: () => {},
+            onStage: () => { },
           });
         } else {
           const animator = new Animator(canvas);
           animatorRef.current = animator;
           await animator.run({
             resultPromise: Promise.resolve(img),
-            onStage: () => {},
+            onStage: () => { },
           });
         }
 
@@ -224,10 +224,33 @@ export default function SecondaryDisplay() {
 
   return (
     <section className={styles.screen} data-has-content={Boolean(photo || processing)} aria-label="Event display">
-      <div className={styles.logos}>
-        <Image src="/artwork/brand/one-development-logo.png" alt="ONE Development" width={440} height={309} priority unoptimized />
-        <Image src="/artwork/brand/do-hotels-white.png" alt="DO Hotels" width={211} height={180} priority unoptimized />
-      </div>
+      {!photo && !processing && (
+        <div className={styles.idleBranding}>
+          <div className={styles.oneLogoWrapper}>
+            <Image
+              src="/artwork/brand/one-development-logo.png"
+              alt="ONE Development"
+              width={260}
+              height={180}
+              priority
+              unoptimized
+              className={styles.oneLogo}
+            />
+          </div>
+          <div className={styles.doLogoWrapper}>
+            <div className={styles.doGlowAura} aria-hidden="true" />
+            <Image
+              src="/artwork/brand/do-hotels-white.png"
+              alt="DO Hotels"
+              width={480}
+              height={410}
+              priority
+              unoptimized
+              className={styles.doLogo}
+            />
+          </div>
+        </div>
+      )}
 
       {processing && !photo && (
         <div className={styles.processingBanner}>
