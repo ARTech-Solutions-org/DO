@@ -1,7 +1,7 @@
 import "server-only";
 import { getPresignedDownloadUrl, getPresignedMetadataUrl, getR2Config, uploadToR2 } from "./delivery/r2.ts";
 
-type DisplayState = { jobId?: string; status: "idle" | "photo"; updatedAt: number };
+type DisplayState = { jobId?: string; status: "idle" | "processing" | "photo"; updatedAt: number };
 const initial: DisplayState = { status: "idle", updatedAt: 0 };
 const slot = "secondary-display/" + (process.env.VERCEL_ENV || "local") + "/current";
 const memory = globalThis as typeof globalThis & { boothDisplay?: { state: DisplayState; photo?: Buffer } };
@@ -21,7 +21,7 @@ async function current() {
   const state: DisplayState = {
     jobId: response.headers.get("x-amz-meta-job") || undefined,
     updatedAt: Number(response.headers.get("x-amz-meta-updated")),
-    status: response.headers.get("x-amz-meta-status") === "photo" ? "photo" : "idle",
+    status: response.headers.get("x-amz-meta-status") === "photo" ? "photo" : response.headers.get("x-amz-meta-status") === "processing" ? "processing" : "idle",
   };
   return { state, etag: response.headers.get("etag") };
 }
@@ -35,7 +35,7 @@ export async function writeDisplay(next: DisplayState, photo?: Buffer) {
   for (let attempt = 0; attempt < 4; attempt++) {
     const { state, etag } = shared ? await current() : { state: memory.boothDisplay?.state || initial, etag: null };
     if (next.updatedAt <= state.updatedAt) return;
-    if (next.status === "idle" && state.status === "photo" && next.jobId !== state.jobId) return;
+    if (next.status === "idle" && (state.status === "photo" || state.status === "processing") && next.jobId !== state.jobId) return;
     if (!shared) {
       memory.boothDisplay = { state: next, photo };
       return;

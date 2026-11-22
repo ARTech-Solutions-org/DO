@@ -1,4 +1,4 @@
-type EventData = { jobId: string; updatedAt: number; status: "photo" | "idle" };
+type EventData = { jobId: string; updatedAt: number; status: "photo" | "idle" | "processing"; styleId?: string };
 const key = "booth-display-session";
 let activeId: string | null = null;
 let pending: AbortController | undefined;
@@ -28,10 +28,11 @@ function publish(event: EventData, photo?: Blob) {
   const controller = new AbortController();
   pending = controller;
   async function sync() {
-    const body = photo ? await preview(photo).catch(() => photo) : JSON.stringify({ status: "idle" });
+    const body = photo ? await preview(photo).catch(() => photo) : JSON.stringify({ status: event.status });
     const headers: Record<string, string> = { "Content-Type": body instanceof Blob ? body.type : "application/json",
       "X-Display-Job": event.jobId, "X-Display-Time": String(event.updatedAt) };
     if (photo) headers["X-Display-Source"] = "result";
+    if (event.styleId) headers["X-Display-Style"] = event.styleId;
     for (let tries = 0; !controller.signal.aborted; tries++) {
       try {
         const response = await fetch("/api/display", { method: "POST",
@@ -54,11 +55,16 @@ function timestamp() {
   return lastTime;
 }
 
-export function displayResult(jobId: string, photo: Blob) {
-  if (activeId === jobId) return;
+export function displayProcessing(jobId: string, styleId?: string) {
   activeId = jobId;
   try { sessionStorage.setItem(key, jobId); } catch { /* In-memory fallback. */ }
-  publish({ jobId, status: "photo", updatedAt: timestamp() }, photo);
+  publish({ jobId, status: "processing", updatedAt: timestamp(), styleId });
+}
+
+export function displayResult(jobId: string, photo: Blob, styleId?: string) {
+  activeId = jobId;
+  try { sessionStorage.setItem(key, jobId); } catch { /* In-memory fallback. */ }
+  publish({ jobId, status: "photo", updatedAt: timestamp(), styleId }, photo);
 }
 
 export function clearDisplayedCapture() {

@@ -7,7 +7,7 @@ import type { FailureReason } from "./failure";
 import { BrandHeader } from "./BrandHeader";
 import { TicketCard } from "./TicketCard";
 import { SaveButton } from "../design/SaveButton";
-import { displayResult } from "./display-session";
+import { displayProcessing, displayResult } from "./display-session";
 import { Animator } from "./sketch";
 import styles from "./Delivery.module.css";
 
@@ -40,6 +40,9 @@ export function Delivery({ state, attempt, dispatch, reset }: {
   const endpoint = "/api/booth/" + jobId;
 
   useEffect(() => {
+    if (stage === "processing") {
+      displayProcessing(jobId, styleId);
+    }
     const controller = new AbortController();
     const signal = controller.signal;
     const headers = { Authorization: "Bearer " + owner };
@@ -88,7 +91,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
                   if (photoRes.ok) {
                     const blob = await photoRes.blob();
                     if (signal.aborted) return;
-                    displayResult(jobId, blob);
+                    displayResult(jobId, blob, styleId);
                     const url = URL.createObjectURL(blob);
                     objectUrl = url;
                     setPhoto(url);
@@ -174,7 +177,7 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           if (signal.aborted) return;
           objectUrl = URL.createObjectURL(blob);
           setPhoto(objectUrl);
-          displayResult(jobId, blob);
+          displayResult(jobId, blob, styleId);
           return;
         } catch {
           if (++attempts >= 3) {

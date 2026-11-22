@@ -18,6 +18,7 @@ export async function POST(request: Request) {
     return new Response(null, { status: 400 });
   }
   let photo: Buffer | undefined;
+  let nextStatus: "idle" | "processing" | "photo" = "idle";
   try {
     const mime = request.headers.get("content-type");
     if (mime === "image/png" || mime === "image/webp" || mime === "image/jpeg") {
@@ -28,10 +29,15 @@ export async function POST(request: Request) {
       const meta = await input.metadata();
       if (mime !== "image/" + meta.format || (meta.pages ?? 1) !== 1) return new Response(null, { status: 400 });
       photo = await input.rotate().resize({ width: 1000, height: 1000, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 86 }).toBuffer();
-    } else if ((await request.json()).status !== "idle") return new Response(null, { status: 400 });
+      nextStatus = "photo";
+    } else {
+      const payload = await request.json();
+      if (payload.status !== "idle" && payload.status !== "processing") return new Response(null, { status: 400 });
+      nextStatus = payload.status;
+    }
   } catch { return new Response(null, { status: 400 }); }
   try {
-    await writeDisplay({ jobId, updatedAt, status: photo ? "photo" : "idle" }, photo);
+    await writeDisplay({ jobId, updatedAt, status: photo ? "photo" : nextStatus }, photo);
     return new Response(null, { status: 204 });
   } catch { return new Response(null, { status: 503 }); }
 }

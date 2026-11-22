@@ -5,6 +5,7 @@
   isolation: isolate;
   background: #0b090e center / cover no-repeat var(--result-art, url("/artwork/web/result-ground-full.webp"));
 }
+
 .logos {
   position: absolute;
   inset: 0;
@@ -12,44 +13,212 @@
   align-items: center;
   justify-content: center;
   gap: clamp(22px, 5vmin, 72px);
+  transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.logos img { display: block; width: min(28vmin, 315px); height: auto; }
-.screen:has([data-ready="true"]) .logos { animation: logoInterlude 11s ease-in-out both; }
+
+.logos img {
+  display: block;
+  width: min(28vmin, 315px);
+  height: auto;
+}
+
+/* While photo is active or drawing/processing, logos stay completely hidden */
+.screen[data-has-content="true"] .logos,
+.screen:has([data-ready="true"]) .logos {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .photoFrame {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(82vw, 78dvh, 1000px);
+  width: min(84vw, 78dvh, 980px);
   aspect-ratio: 1;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(.82);
+  transform: translate(-50%, -50%) scale(0.85);
   transform-origin: center;
-  filter: drop-shadow(0 1.2vmin 2.4vmin #0008);
+  filter: drop-shadow(0 1.6vmin 3.6vmin rgba(0, 0, 0, 0.75));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.photoFrame[data-ready="true"] { animation: portraitFloat 11s ease-in-out both; }
-.portrait {
-  display: block;
+
+/* Photo stays visible indefinitely until tablet returns to home! */
+.photoFrame[data-ready="true"] {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  animation:
+    portraitEnter 0.9s cubic-bezier(0.16, 1, 0.3, 1) both,
+    portraitFloat 16s ease-in-out 0.9s infinite alternate;
+}
+
+@keyframes portraitEnter {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Gentle continuous float so the display feels alive without ever disappearing */
+@keyframes portraitFloat {
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  33% {
+    transform: translate(calc(-50% + 1.6vw), calc(-50% - 1.2vh)) scale(1.008);
+  }
+  66% {
+    transform: translate(calc(-50% - 1.4vw), calc(-50% + 1.2vh)) scale(0.995);
+  }
+  100% {
+    transform: translate(calc(-50% + 1.2vw), calc(-50% + 0.8vh)) scale(1.005);
+  }
+}
+
+.canvasContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #faf4ed;
+  border-radius: clamp(14px, 2.5vmin, 28px);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 2vmin 4vmin rgba(0, 0, 0, 0.5);
+}
+
+.sketchCanvas {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 3%;
+  display: block;
 }
-@keyframes portraitFloat {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(.82); }
-  10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  25% { transform: translate(calc(-50% + 2.4vw), calc(-50% - 1.4vh)) scale(1); }
-  42% { transform: translate(calc(-50% - 2vw), calc(-50% + 1.5vh)) scale(1); }
-  59% { transform: translate(calc(-50% + 1.4vw), calc(-50% + 1vh)) scale(1); }
-  76% { opacity: 1; transform: translate(calc(-50% - 1.2vw), calc(-50% - 1.2vh)) scale(1); }
-  85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+
+.portrait {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: clamp(14px, 2.5vmin, 28px);
+  opacity: 0;
+  transition: opacity 0.9s ease-in-out;
+  display: block;
 }
-@keyframes logoInterlude {
-  0% { opacity: 1; }
-  10%, 85% { opacity: 0; }
-  100% { opacity: 1; }
+
+.portrait[data-visible="true"] {
+  opacity: 1;
 }
+
+.stageBadge {
+  position: absolute;
+  bottom: clamp(-46px, -6vmin, -56px);
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(8px, 1.2vmin, 14px);
+  padding: clamp(6px, 1vmin, 10px) clamp(16px, 2.5vmin, 26px);
+  background: rgba(14, 10, 22, 0.85);
+  border: 1px solid rgba(195, 74, 255, 0.35);
+  backdrop-filter: blur(12px);
+  border-radius: 9999px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(150, 107, 252, 0.2);
+  transition: all 0.5s ease;
+  z-index: 10;
+}
+
+.stageBadge[data-live="false"] {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.pulseDot {
+  width: clamp(7px, 1vmin, 10px);
+  height: clamp(7px, 1vmin, 10px);
+  border-radius: 50%;
+  background: #c34aff;
+  box-shadow: 0 0 10px #c34aff;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.stageBadge[data-live="false"] .pulseDot {
+  background: #2dd4bf;
+  box-shadow: 0 0 8px #2dd4bf;
+  animation: none;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+
+.stageText {
+  font-family: var(--font-display, "Montserrat", sans-serif);
+  font-weight: 800;
+  font-size: clamp(0.78rem, 1.6vmin, 1.12rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f8f4fb;
+  white-space: nowrap;
+}
+
+.processingBanner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 5;
+  animation: portraitEnter 0.6s ease-out both;
+}
+
+.magicSpinner {
+  width: clamp(52px, 8vmin, 80px);
+  height: clamp(52px, 8vmin, 80px);
+  border: 3px solid rgba(195, 74, 255, 0.2);
+  border-top-color: #c34aff;
+  border-right-color: #ffb044;
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+  box-shadow: 0 0 24px rgba(195, 74, 255, 0.3);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.magicText {
+  font-family: var(--font-display, "Montserrat", sans-serif);
+  font-weight: 800;
+  font-size: clamp(1.2rem, 3.2vmin, 2.2rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f8f4fb;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.8), 0 0 20px rgba(195, 74, 255, 0.4);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .screen:has([data-ready="true"]) .logos { animation: none; opacity: 0; }
-  .photoFrame[data-ready="true"] { animation: none; opacity: 1; transform: translate(-50%, -50%); }
+  .photoFrame[data-ready="true"] {
+    animation: none;
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  .pulseDot, .magicSpinner {
+    animation: none;
+  }
 }

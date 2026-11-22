@@ -94,9 +94,9 @@ def test_display(style="lidar", fixture=FIXTURE):
         left = rect(5100)
         assert right[0] + right[2] / 2 > 192
         assert left[0] + left[2] / 2 < 192
-        assert rect(10700)[2] < w / 2
-        assert rect(11000)[2] == 0
-        print("PASS", style, "centered portrait floats gently and shrinks away", flush=True)
+        assert rect(10700)[2] > 0
+        assert rect(11000)[2] > 0
+        print("PASS", style, "centered portrait floats gently and remains visible", flush=True)
         save = booth.locator('[data-stage="result"] button').filter(has=booth.locator("svg"))
         expect(save).to_be_enabled(timeout=120000)
         expect(portrait).to_have_attribute("src", source)
