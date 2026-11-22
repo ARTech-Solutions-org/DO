@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Animator } from "../../booth/sketch";
+import { PartyAnimator } from "../../booth/party-animator";
 import styles from "./Display.module.css";
 
 type Update = {
@@ -18,7 +19,7 @@ type Photo = { id: string; url: string; styleId?: string };
 
 function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
   const [ready, setReady] = useState(false);
-  const [animating, setAnimating] = useState(photo.styleId !== "lidar");
+  const [animating, setAnimating] = useState(true);
   const [stage, setStage] = useState<string>("sketch");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animatorRef = useRef<Animator | null>(null);
@@ -43,27 +44,37 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
         if (cancelled) return;
         setReady(true);
 
-        // If LiDAR or canvas is unavailable, display final directly
-        if (photo.styleId === "lidar" || !canvasRef.current) {
+        const canvas = canvasRef.current;
+        if (!canvas) {
           setAnimating(false);
           return;
         }
 
-        const animator = new Animator(canvasRef.current);
-        animatorRef.current = animator;
-
-        await animator.run({
-          resultPromise: Promise.resolve(img),
-          onStage: (st: string) => {
-            if (!cancelled) setStage(st);
-          },
-        });
+        if (photo.styleId === "lidar") {
+          const animator = new PartyAnimator(canvas);
+          animatorRef.current = animator as unknown as Animator;
+          await animator.run({
+            resultPromise: Promise.resolve(img),
+            onStage: (st: string) => {
+              if (!cancelled) setStage(st);
+            },
+          });
+        } else {
+          const animator = new Animator(canvas);
+          animatorRef.current = animator;
+          await animator.run({
+            resultPromise: Promise.resolve(img),
+            onStage: (st: string) => {
+              if (!cancelled) setStage(st);
+            },
+          });
+        }
 
         if (!cancelled) {
           setAnimating(false);
         }
       } catch (err) {
-        console.warn("Display sketch error:", err);
+        console.warn("Display animation error:", err);
         if (!cancelled) {
           setReady(true);
           setAnimating(false);
@@ -83,16 +94,26 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
   }, [photo.url, photo.styleId, onError]);
 
   const stageLabel = animating
-    ? stage === "redraw"
+    ? photo.styleId === "lidar"
+      ? stage === "radar"
+        ? "INITIALIZING LASER SCAN…"
+        : stage === "sweep"
+        ? "SCANNING NEON POINT-CLOUD…"
+        : stage === "chroma"
+        ? "INJECTING CHROMATIC PARTY GLOW…"
+        : "FINALIZING PARTY MODE…"
+      : stage === "redraw"
       ? "INKING DETAILS & OUTLINES…"
       : stage === "color"
       ? "COLORING IN YOUR LOOK…"
       : "CREATING YOUR CARICATURE…"
+    : photo.styleId === "lidar"
+    ? "PARTY MODE · ONE × DO"
     : "ONE × DO HOTELS";
 
   return (
     <div className={styles.photoFrame} data-ready={ready}>
-      <div className={styles.canvasContainer}>
+      <div className={styles.canvasContainer} data-style={photo.styleId}>
         <canvas
           ref={canvasRef}
           width={1024}
@@ -108,7 +129,7 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
           onError={onError}
         />
       </div>
-      <div className={styles.stageBadge} data-live={animating}>
+      <div className={styles.stageBadge} data-live={animating} data-style={photo.styleId}>
         <span className={styles.pulseDot} />
         <span className={styles.stageText}>{stageLabel}</span>
       </div>

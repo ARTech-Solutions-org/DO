@@ -9,6 +9,7 @@ import { TicketCard } from "./TicketCard";
 import { SaveButton } from "../design/SaveButton";
 import { displayProcessing, displayResult } from "./display-session";
 import { Animator } from "./sketch";
+import { PartyAnimator } from "./party-animator";
 import styles from "./Delivery.module.css";
 
 type Stage = "processing" | "result" | "qr";
@@ -77,33 +78,42 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           setMock(current.mock);
           if (current.status === "SUCCEEDED") {
             void forgetCapture(jobId);
-            if (styleId === "caricature") {
-              try {
-                let canvas = canvasRef.current;
-                if (!canvas) {
-                  for (let r = 0; r < 10 && !canvas; r++) {
-                    await new Promise(res => setTimeout(res, 100));
-                    canvas = canvasRef.current;
-                  }
+            try {
+              let canvas = canvasRef.current;
+              if (!canvas) {
+                for (let r = 0; r < 10 && !canvas; r++) {
+                  await new Promise(res => setTimeout(res, 100));
+                  canvas = canvasRef.current;
                 }
-                if (canvas) {
-                  const photoRes = await request("/portrait", {}, 20_000);
-                  if (photoRes.ok) {
-                    const blob = await photoRes.blob();
-                    if (signal.aborted) return;
-                    displayResult(jobId, blob, styleId);
-                    const url = URL.createObjectURL(blob);
-                    objectUrl = url;
-                    setPhoto(url);
+              }
+              if (canvas) {
+                const photoRes = await request("/portrait", {}, 20_000);
+                if (photoRes.ok) {
+                  const blob = await photoRes.blob();
+                  if (signal.aborted) return;
+                  displayResult(jobId, blob, styleId);
+                  const url = URL.createObjectURL(blob);
+                  objectUrl = url;
+                  setPhoto(url);
 
-                    const img = new window.Image();
-                    img.src = url;
-                    await new Promise((resolve) => {
-                      img.onload = resolve;
-                      img.onerror = resolve;
-                    });
+                  const img = new window.Image();
+                  img.src = url;
+                  await new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                  });
 
-                    if (!signal.aborted && canvas) {
+                  if (!signal.aborted && canvas) {
+                    if (styleId === "lidar") {
+                      const animator = new PartyAnimator(canvas);
+                      animatorRef.current = animator as unknown as Animator;
+                      await animator.run({
+                        resultPromise: Promise.resolve(img),
+                        onStage: (st: string) => {
+                          if (!signal.aborted) setDrawingStage(st);
+                        },
+                      });
+                    } else {
                       const animator = new Animator(canvas);
                       animatorRef.current = animator;
                       await animator.run({
@@ -115,9 +125,9 @@ export function Delivery({ state, attempt, dispatch, reset }: {
                     }
                   }
                 }
-              } catch (animErr) {
-                console.error("Sketch animation error:", animErr);
               }
+            } catch (animErr) {
+              console.error("Animation error:", animErr);
             }
             dispatch({ type: "generated", jobId, resultId: jobId });
             return;
@@ -206,44 +216,45 @@ export function Delivery({ state, attempt, dispatch, reset }: {
       <BrandHeader />
       {stage === "processing" && (
         <>
-          {styleId === "caricature" ? (
-            <div className={styles.sketchWrapper}>
-              <canvas
-                ref={canvasRef}
-                width={1024}
-                height={1024}
-                className={styles.sketchCanvas}
-              />
-              {(drawingStage === "wait" || drawingStage === "sketch") && (
-                <div className={styles.processing} style={{ position: "absolute", inset: 0 }}>
-                  <div className={styles.vinyl} aria-hidden="true"><i /></div>
-                  <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className={styles.processing}>
-              <div className={styles.vinyl} aria-hidden="true"><i /></div>
-              <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
-            </div>
-          )}
+          <div className={styles.sketchWrapper} data-style={styleId}>
+            <canvas
+              ref={canvasRef}
+              width={1024}
+              height={1024}
+              className={styles.sketchCanvas}
+            />
+            {(drawingStage === "wait" || drawingStage === "sketch") && (
+              <div className={styles.processing} style={{ position: "absolute", inset: 0 }}>
+                <div className={styles.vinyl} aria-hidden="true"><i /></div>
+                <h1 ref={focus} tabIndex={-1}>MAKING<br /> MAGIC</h1>
+              </div>
+            )}
+          </div>
           <p className={styles.sub} role="status">
-            {styleId === "caricature"
+            {styleId === "lidar"
               ? drawingStage === "wait" || drawingStage === "sketch"
-                ? "CREATING YOUR CARICATURE…"
-                : drawingStage === "redraw"
-                ? "INKING DETAILS & OUTLINES…"
-                : drawingStage === "color"
-                ? "COLORING IN YOUR LOOK…"
-                : "FINISHING TOUCHES…"
-              : "ACQUIRING 3D POINT CLOUD…"}
+                ? "PREPARING PARTY MODE…"
+                : drawingStage === "radar"
+                ? "INITIALIZING LASER SCAN…"
+                : drawingStage === "sweep"
+                ? "SCANNING NEON POINT-CLOUD…"
+                : drawingStage === "chroma"
+                ? "INJECTING CHROMATIC PARTY GLOW…"
+                : "FINALIZING PARTY MODE…"
+              : drawingStage === "wait" || drawingStage === "sketch"
+              ? "CREATING YOUR CARICATURE…"
+              : drawingStage === "redraw"
+              ? "INKING DETAILS & OUTLINES…"
+              : drawingStage === "color"
+              ? "COLORING IN YOUR LOOK…"
+              : "FINISHING TOUCHES…"}
           </p>
         </>
       )}
       {stage === "result" && <>
         <h1 ref={focus} tabIndex={-1}>YOUR LOOK</h1>
         <div className={styles.portrait}>
-          {photo && <Image src={photo} unoptimized width={1024} height={1024} alt={styleId === "lidar" ? "Your LiDAR portrait" : "Your caricature portrait"} />}
+          {photo && <Image src={photo} unoptimized width={1024} height={1024} alt={styleId === "lidar" ? "Your Party Mode portrait" : "Your caricature portrait"} />}
           {mock && <span>DEVELOPMENT SAMPLE</span>}
         </div>
         <footer className={styles.actions}>

@@ -28,7 +28,7 @@ export const boothConfig = {
     },
     {
       id: "lidar",
-      label: "LiDAR Scan",
+      label: "Party Mode",
       enabled: true,
       sample: {
         full: "/artwork/web/lidar-sample-full.webp",

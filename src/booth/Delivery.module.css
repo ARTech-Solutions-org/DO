@@ -59,6 +59,10 @@
   overflow: hidden;
   box-shadow: 0 1cqi 7cqi rgb(0 0 0 / .45);
 }
+.sketchWrapper[data-style="lidar"] {
+  background: #05040a;
+  box-shadow: 0 0 0 1px rgba(195, 74, 255, 0.25), 0 1cqi 7cqi rgb(0 0 0 / .65);
+}
 .sketchCanvas {
   width: 100%;
   height: 100%;
