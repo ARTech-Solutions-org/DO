@@ -172,7 +172,7 @@ export function delivery(config: DeliveryConfig, hooks: {
         filename: "source.png",
         width: 1024,
         height: 1024,
-        bytes: bytes.length,
+        bytes: bytes.byteLength,
         sha256: digest(bytes),
       },
     };

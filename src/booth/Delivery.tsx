@@ -36,9 +36,21 @@ export function Delivery({ state, attempt, dispatch, reset }: {
   const [drawingStage, setDrawingStage] = useState<string>("wait");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animatorRef = useRef<Animator | null>(null);
+  const portraitBlobRef = useRef<Blob | null>(null);
+  const portraitUrlRef = useRef<string | null>(null);
   const { stage } = state;
   const { jobId, owner, sessionId, consentAt, styleId } = attempt;
   const endpoint = "/api/booth/" + jobId;
+
+  // Clean up object URL only when Delivery unmounts (survives stage transitions)
+  useEffect(() => {
+    return () => {
+      if (portraitUrlRef.current) {
+        URL.revokeObjectURL(portraitUrlRef.current);
+        portraitUrlRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (stage === "processing") {
@@ -47,7 +59,6 @@ export function Delivery({ state, attempt, dispatch, reset }: {
     const controller = new AbortController();
     const signal = controller.signal;
     const headers = { Authorization: "Bearer " + owner };
-    let objectUrl: string | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const fail = (reason: FailureReason) => {
       if (!signal.aborted) dispatch({ type: "fail", reason });
@@ -91,13 +102,15 @@ export function Delivery({ state, attempt, dispatch, reset }: {
                 if (photoRes.ok) {
                   const blob = await photoRes.blob();
                   if (signal.aborted) return;
+                  portraitBlobRef.current = blob;
                   displayResult(jobId, blob, styleId);
-                  const url = URL.createObjectURL(blob);
-                  objectUrl = url;
-                  setPhoto(url);
+                  if (!portraitUrlRef.current) {
+                    portraitUrlRef.current = URL.createObjectURL(blob);
+                  }
+                  setPhoto(portraitUrlRef.current);
 
                   const img = new window.Image();
-                  img.src = url;
+                  img.src = portraitUrlRef.current;
                   await new Promise((resolve) => {
                     img.onload = resolve;
                     img.onerror = resolve;
@@ -178,6 +191,18 @@ export function Delivery({ state, attempt, dispatch, reset }: {
       }
     }
     async function getPhoto() {
+      // If photo URL or blob already in memory from polling/drawing, reuse immediately
+      if (portraitUrlRef.current) {
+        setPhoto(portraitUrlRef.current);
+        return;
+      }
+      if (portraitBlobRef.current) {
+        const url = URL.createObjectURL(portraitBlobRef.current);
+        portraitUrlRef.current = url;
+        setPhoto(url);
+        return;
+      }
+
       let attempts = 0;
       while (!signal.aborted) {
         try {
@@ -185,13 +210,18 @@ export function Delivery({ state, attempt, dispatch, reset }: {
           if (!response.ok) throw new Error("Photo unavailable.");
           const blob = await response.blob();
           if (signal.aborted) return;
-          objectUrl = URL.createObjectURL(blob);
-          setPhoto(objectUrl);
+          portraitBlobRef.current = blob;
+          const url = URL.createObjectURL(blob);
+          portraitUrlRef.current = url;
+          setPhoto(url);
           displayResult(jobId, blob, styleId);
           return;
-        } catch {
+        } catch (err) {
+          console.warn("Portrait fetch retry:", err);
           if (++attempts >= 3) {
-            fail("result");
+            if (!portraitUrlRef.current && !portraitBlobRef.current && !photo) {
+              fail("result");
+            }
             return;
           }
           await new Promise(r => setTimeout(r, 800));
@@ -205,7 +235,6 @@ export function Delivery({ state, attempt, dispatch, reset }: {
       if (animatorRef.current) animatorRef.current.stop();
       controller.abort();
       clearTimeout(timer);
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
     }
     window.addEventListener("pagehide", release);
     return () => { window.removeEventListener("pagehide", release); release(); };
@@ -264,7 +293,6 @@ export function Delivery({ state, attempt, dispatch, reset }: {
             disabled={!photo}
             onClick={() => {
               setTimeout(() => {
-                setPhoto(undefined);
                 setLink(undefined);
                 dispatch({ type: "open-qr" });
               }, 450);
