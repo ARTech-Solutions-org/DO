@@ -90,7 +90,28 @@ Never draw ears on a hijab or over hair that covers the ears.
 
 The uploaded subject photo defines the PERSON, identity, facial features, clothing, headwear and expression.`;
 
-export const LIDAR_PROMPT = `Transform the uploaded photograph into a pure high-density scientific LiDAR point-cloud visualization in 4:5 vertical portrait composition. Abandon photographic surfaces entirely: no skin texture, no continuous meshes, no smooth shading, and no solid forms. Reconstruct the subject exclusively as thousands of separate glowing laser-return points suspended in space with clearly visible black gaps between them. Preserve the subject's exact facial features, proportions, expression, spatial relationships, and head-and-shoulders composition with generous clear padding on all sides. Color every point by spatial depth using a vibrant branded palette: electric ultraviolet and neon purple (#966BFC and #C34AFF) on near-field laser returns, transitioning through magenta into incandescent amber and warm gold (#FFB044 and #E48D3D) on far-field depth returns. Scanner origin and radial sweep geometry should produce clean laser trajectories and realistic occlusion shadows. Render only the discrete point-cloud returns on transparent pixels, ready for placement on pure deep void black space (#05040A), with no background scenery, no fog, no bloom-heavy haze, and no outer edge contact.`;
+export const LIDAR_PROMPT = `Transform the uploaded photograph into an energetic, high-density party-mode LiDAR point-cloud visualization in 4:5 vertical portrait composition, celebrating an upscale festival atmosphere.
+
+PARTY POSE & CELEBRATION VIBE (CRITICAL REQUIREMENT):
+* Re-pose the subject from their static camera pose into a dynamic, stylish party celebration pose!
+* Give them an expressive, charismatic party stance: a dynamic head tilt, confident shoulder angle, celebratory festive body language, and a vibrant party attitude full of rhythm and energy.
+* The pose must feel alive, celebratory, and celebratory-event ready (like a VIP guest at an exclusive festival or luxury party), NOT rigid or like a passport photo.
+
+IDENTITY & FACIAL LIKENESS PRESERVATION (STRICT REQUIREMENT):
+* Absolutely preserve the exact identity, recognizable facial features, face shape, eyes, nose, lips, and facial expression of the person in the photo.
+* Do NOT change their appearance or turn them into someone else. Keep their recognizable likeness, skin tone, and natural hairstyle.
+* If wearing a hijab or headscarf: Strictly preserve the hijab wrap, fabric, and coverage. NEVER expose hair or ears under any circumstances.
+
+CLOTHING PRESERVATION (STRICT REQUIREMENT):
+* Faithfully preserve the person's exact original clothing and outfit from the uploaded photo.
+* Reconstruct their actual clothing (same shirt, jacket, dress, collars, patterns, and colors) in the dynamic party pose.
+* Do NOT invent new clothes or replace their outfit with random costumes. The clothes must remain their original garments.
+
+LIDAR & PARTY LASER AESTHETIC:
+* Reconstruct the subject exclusively as thousands of separate glowing laser-return points suspended in space with clearly visible black gaps between them. Abandon flat photographic surfaces.
+* Color every point by spatial depth using a vibrant branded palette: electric ultraviolet and neon purple (#966BFC and #C34AFF) on near-field laser returns, transitioning through magenta into incandescent amber and warm gold (#FFB044 and #E48D3D) on far-field depth returns.
+* Scanner origin and radial sweep geometry should produce clean laser trajectories and realistic depth occlusion.
+* Render only the discrete point-cloud returns on transparent pixels, ready for placement on pure deep void black space (#05040A), with no background scenery, no fog, no bloom-heavy haze, and no outer edge contact.`;
 
 export function promptForStyle(style: string) {
   if (style === "caricature") return CARICATURE_PROMPT;
