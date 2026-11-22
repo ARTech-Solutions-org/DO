@@ -17,10 +17,35 @@ type Update = {
 
 type Photo = { id: string; url: string; styleId?: string };
 
+function isPartyMode(img: HTMLImageElement, explicitStyleId?: string): boolean {
+  if (explicitStyleId === "lidar") return true;
+  if (explicitStyleId === "sketch") return false;
+  try {
+    const testCanvas = document.createElement("canvas");
+    testCanvas.width = 16;
+    testCanvas.height = 16;
+    const ctx = testCanvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return explicitStyleId === "lidar";
+    ctx.drawImage(img, 0, 0, 16, 16);
+    const data = ctx.getImageData(0, 0, 16, 16).data;
+    const corners = [0, 15 * 4, 15 * 16 * 4, (15 * 16 + 15) * 4];
+    let totalLuma = 0;
+    for (const idx of corners) {
+      const r = data[idx];
+      const g = data[idx + 1];
+      const b = data[idx + 2];
+      totalLuma += 0.299 * r + 0.587 * g + 0.114 * b;
+    }
+    const avgCornerLuma = totalLuma / corners.length;
+    return avgCornerLuma < 80;
+  } catch {
+    return explicitStyleId === "lidar";
+  }
+}
+
 function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
   const [ready, setReady] = useState(false);
   const [animating, setAnimating] = useState(true);
-  const [stage, setStage] = useState<string>("sketch");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animatorRef = useRef<Animator | null>(null);
 
@@ -50,23 +75,20 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
           return;
         }
 
-        if (photo.styleId === "lidar") {
+        const party = isPartyMode(img, photo.styleId);
+        if (party) {
           const animator = new PartyAnimator(canvas);
           animatorRef.current = animator as unknown as Animator;
           await animator.run({
             resultPromise: Promise.resolve(img),
-            onStage: (st: string) => {
-              if (!cancelled) setStage(st);
-            },
+            onStage: () => {},
           });
         } else {
           const animator = new Animator(canvas);
           animatorRef.current = animator;
           await animator.run({
             resultPromise: Promise.resolve(img),
-            onStage: (st: string) => {
-              if (!cancelled) setStage(st);
-            },
+            onStage: () => {},
           });
         }
 
@@ -93,24 +115,6 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
     };
   }, [photo.url, photo.styleId, onError]);
 
-  const stageLabel = animating
-    ? photo.styleId === "lidar"
-      ? stage === "radar"
-        ? "INITIALIZING LASER SCAN…"
-        : stage === "sweep"
-        ? "SCANNING NEON POINT-CLOUD…"
-        : stage === "chroma"
-        ? "INJECTING CHROMATIC PARTY GLOW…"
-        : "FINALIZING PARTY MODE…"
-      : stage === "redraw"
-      ? "INKING DETAILS & OUTLINES…"
-      : stage === "color"
-      ? "COLORING IN YOUR LOOK…"
-      : "CREATING YOUR CARICATURE…"
-    : photo.styleId === "lidar"
-    ? "PARTY MODE · ONE × DO"
-    : "ONE × DO HOTELS";
-
   return (
     <div className={styles.photoFrame} data-ready={ready}>
       <div className={styles.canvasContainer} data-style={photo.styleId}>
@@ -129,10 +133,6 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
           onError={onError}
         />
       </div>
-      <div className={styles.stageBadge} data-live={animating} data-style={photo.styleId}>
-        <span className={styles.pulseDot} />
-        <span className={styles.stageText}>{stageLabel}</span>
-      </div>
     </div>
   );
 }
@@ -140,6 +140,7 @@ function Portrait({ photo, onError }: { photo: Photo; onError: () => void }) {
 export default function SecondaryDisplay() {
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [processing, setProcessing] = useState(false);
+  const lastStyleIdRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -156,9 +157,14 @@ export default function SecondaryDisplay() {
       }
       revision++;
 
+      if (data.styleId) {
+        lastStyleIdRef.current = data.styleId;
+      }
+
       if (data.status === "idle") {
         setProcessing(false);
         setPhoto(null);
+        lastStyleIdRef.current = undefined;
         if (localUrl) URL.revokeObjectURL(localUrl);
         localUrl = undefined;
         return;
@@ -171,15 +177,16 @@ export default function SecondaryDisplay() {
 
       if (data.status === "photo") {
         setProcessing(false);
+        const resolvedStyle = data.styleId || lastStyleIdRef.current;
         if (data.photo instanceof Blob) {
           if (localUrl) URL.revokeObjectURL(localUrl);
           localUrl = URL.createObjectURL(data.photo);
-          setPhoto({ id: data.jobId!, url: localUrl, styleId: data.styleId });
+          setPhoto({ id: data.jobId!, url: localUrl, styleId: resolvedStyle });
           return;
         }
         if (data.photoUrl) {
-          const next: Photo = { id: data.jobId || data.photoUrl, url: data.photoUrl, styleId: data.styleId };
-          setPhoto(previous => previous?.id === next.id && previous.url === next.url ? previous : next);
+          const next: Photo = { id: data.jobId || data.photoUrl, url: data.photoUrl, styleId: resolvedStyle };
+          setPhoto(previous => previous?.id === next.id && previous.url === next.url && previous.styleId === next.styleId ? previous : next);
         }
       }
     }

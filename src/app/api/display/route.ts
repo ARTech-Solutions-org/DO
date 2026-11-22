@@ -7,13 +7,18 @@ const noCache = { "Cache-Control": "no-store" };
 export async function GET() {
   try {
     const state = await readDisplay();
-    return Response.json({ ...state, photoUrl: state.status === "photo" ? "/api/display/photo?id=" + state.jobId : undefined }, { headers: noCache });
+    return Response.json({
+      ...state,
+      styleId: state.styleId,
+      photoUrl: state.status === "photo" ? "/api/display/photo?id=" + state.jobId : undefined,
+    }, { headers: noCache });
   } catch { return new Response(null, { status: 503, headers: noCache }); }
 }
 
 export async function POST(request: Request) {
   const jobId = request.headers.get("x-display-job") || "";
   const updatedAt = Number(request.headers.get("x-display-time"));
+  let styleId = request.headers.get("x-display-style") || undefined;
   if (!/^[\w-]{1,80}$/.test(jobId) || !Number.isSafeInteger(updatedAt) || updatedAt <= 0 || updatedAt > Date.now() + 300000) {
     return new Response(null, { status: 400 });
   }
@@ -34,10 +39,11 @@ export async function POST(request: Request) {
       const payload = await request.json();
       if (payload.status !== "idle" && payload.status !== "processing") return new Response(null, { status: 400 });
       nextStatus = payload.status;
+      if (typeof payload.styleId === "string") styleId = payload.styleId;
     }
   } catch { return new Response(null, { status: 400 }); }
   try {
-    await writeDisplay({ jobId, updatedAt, status: photo ? "photo" : nextStatus }, photo);
+    await writeDisplay({ jobId, updatedAt, status: photo ? "photo" : nextStatus, styleId }, photo);
     return new Response(null, { status: 204 });
   } catch { return new Response(null, { status: 503 }); }
 }

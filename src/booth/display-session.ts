@@ -28,7 +28,7 @@ function publish(event: EventData, photo?: Blob) {
   const controller = new AbortController();
   pending = controller;
   async function sync() {
-    const body = photo ? await preview(photo).catch(() => photo) : JSON.stringify({ status: event.status });
+    const body = photo ? await preview(photo).catch(() => photo) : JSON.stringify({ status: event.status, styleId: event.styleId });
     const headers: Record<string, string> = { "Content-Type": body instanceof Blob ? body.type : "application/json",
       "X-Display-Job": event.jobId, "X-Display-Time": String(event.updatedAt) };
     if (photo) headers["X-Display-Source"] = "result";

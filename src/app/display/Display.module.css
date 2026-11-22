@@ -121,6 +121,7 @@
 }
 
 .stageBadge {
+  display: none !important;
   position: absolute;
   bottom: clamp(-46px, -6vmin, -56px);
   display: inline-flex;

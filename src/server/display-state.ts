@@ -1,7 +1,7 @@
 import "server-only";
 import { getPresignedDownloadUrl, getPresignedMetadataUrl, getR2Config, uploadToR2 } from "./delivery/r2.ts";
 
-type DisplayState = { jobId?: string; status: "idle" | "processing" | "photo"; updatedAt: number };
+type DisplayState = { jobId?: string; status: "idle" | "processing" | "photo"; updatedAt: number; styleId?: string };
 const initial: DisplayState = { status: "idle", updatedAt: 0 };
 const slot = "secondary-display/" + (process.env.VERCEL_ENV || "local") + "/current";
 const memory = globalThis as typeof globalThis & { boothDisplay?: { state: DisplayState; photo?: Buffer } };
@@ -22,6 +22,7 @@ async function current() {
     jobId: response.headers.get("x-amz-meta-job") || undefined,
     updatedAt: Number(response.headers.get("x-amz-meta-updated")),
     status: response.headers.get("x-amz-meta-status") === "photo" ? "photo" : response.headers.get("x-amz-meta-status") === "processing" ? "processing" : "idle",
+    styleId: response.headers.get("x-amz-meta-style") || undefined,
   };
   return { state, etag: response.headers.get("etag") };
 }
@@ -36,14 +37,22 @@ export async function writeDisplay(next: DisplayState, photo?: Buffer) {
     const { state, etag } = shared ? await current() : { state: memory.boothDisplay?.state || initial, etag: null };
     if (next.updatedAt <= state.updatedAt) return;
     if (next.status === "idle" && (state.status === "photo" || state.status === "processing") && next.jobId !== state.jobId) return;
+    const finalStyle = next.styleId || (state.jobId === next.jobId ? state.styleId : undefined);
+    const resolvedNext: DisplayState = { ...next, styleId: finalStyle };
     if (!shared) {
-      memory.boothDisplay = { state: next, photo };
+      memory.boothDisplay = { state: resolvedNext, photo };
       return;
     }
     try {
+      const headers: Record<string, string> = {
+        "x-amz-meta-job": resolvedNext.jobId!,
+        "x-amz-meta-updated": String(resolvedNext.updatedAt),
+        "x-amz-meta-status": resolvedNext.status,
+        ...(etag ? { "if-match": etag } : { "if-none-match": "*" }),
+      };
+      if (resolvedNext.styleId) headers["x-amz-meta-style"] = resolvedNext.styleId;
       await uploadToR2({ key: slot, buffer: photo || Buffer.from("0"), contentType: photo ? "image/jpeg" : "text/plain",
-        headers: { "x-amz-meta-job": next.jobId!, "x-amz-meta-updated": String(next.updatedAt),
-          "x-amz-meta-status": next.status, ...(etag ? { "if-match": etag } : { "if-none-match": "*" }) } });
+        headers });
       return;
     } catch (error) {
       if (!(error instanceof Error) || !/R2 upload failed: (409|412)/.test(error.message)) throw error;
