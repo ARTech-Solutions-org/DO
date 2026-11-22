@@ -161,5 +161,22 @@ export function delivery(config: DeliveryConfig, hooks: {
     return { bytes: new Uint8Array(bytes), artifact };
   }
 
-  return { claim, lookup, status, run, recover, photo, cleanup: () => cleanupExpired(config.root, clock()) };
+  async function sourcePhoto(job: NonNullable<Awaited<ReturnType<typeof lookup>>>) {
+    if (clock() >= job.claim.expiresAt) return null;
+    const bytes = await readFile(join(job.dir, "source.png")).catch(() => null);
+    if (!bytes) return null;
+    return {
+      bytes: new Uint8Array(bytes),
+      artifact: {
+        contentType: "image/png" as const,
+        filename: "source.png",
+        width: 1024,
+        height: 1024,
+        bytes: bytes.length,
+        sha256: digest(bytes),
+      },
+    };
+  }
+
+  return { claim, lookup, status, run, recover, photo, sourcePhoto, cleanup: () => cleanupExpired(config.root, clock()) };
 }

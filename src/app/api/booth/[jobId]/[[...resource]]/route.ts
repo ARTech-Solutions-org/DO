@@ -61,7 +61,7 @@ async function handle(request: Request, context: Context) {
     if (request.method === "GET" && !action) return json(await service.status(job));
     if (request.method === "POST" && action === "recover") return json(await service.recover(job));
     if (request.method === "GET" && action === "portrait") {
-      const photo = await service.photo(job);
+      const photo = await service.sourcePhoto(job) || await service.photo(job);
       return photo ? photoResponse(photo, false) : error(404);
     }
     if (request.method === "POST" && action === "link") {
