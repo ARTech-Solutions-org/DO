@@ -40,7 +40,6 @@ export function ChooseStyle({ state, dispatch, partners, onBack }: Props) {
                 checked={state.styleId === id}
                 onChange={() => dispatch({ type: "select-style", styleId: id })}
                 aria-labelledby={`style-label-${id}`}
-                aria-describedby={`style-sample-${id}`}
               />
               <label className={styles.tile} htmlFor={`style-${id}`}>
                 <picture>
@@ -49,7 +48,6 @@ export function ChooseStyle({ state, dispatch, partners, onBack }: Props) {
                 </picture>
                 <span className={styles.caption}>
                   <span className={styles.name} id={`style-label-${id}`}>{label}</span>
-                  <span className={styles.sample} id={`style-sample-${id}`}>Fictional sample</span>
                 </span>
                 <span className={styles.indicator} aria-hidden="true" />
               </label>

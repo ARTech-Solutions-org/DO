@@ -78,18 +78,20 @@
 }
 
 .caption {
-  display: grid;
-  gap: .15em;
-  padding: clamp(0.45rem, 1.4cqi, 0.9rem) clamp(0.55rem, 1.8cqi, 1.1rem);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: clamp(0.55rem, 1.8cqi, 1.1rem) clamp(0.55rem, 1.8cqi, 1.1rem);
 }
 
 .name {
+  text-align: center;
   font: 700 clamp(0.95rem, 2.9cqi, 1.45rem)/1.15 var(--font-display);
-  letter-spacing: .02em;
+  letter-spacing: .03em;
   text-transform: uppercase;
+  width: 100%;
 }
-
-.sample { color: var(--text-secondary); font-size: clamp(0.68rem, 1.6cqi, 0.85rem); }
 
 .indicator {
   position: absolute;
