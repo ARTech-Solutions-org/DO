@@ -113,6 +113,12 @@
 
 .settings {
   position: relative;
+  display: none;
+}
+
+:global([data-show-settings="true"]) .settings,
+.settings[data-visible="true"] {
+  display: block;
 }
 
 .panel {

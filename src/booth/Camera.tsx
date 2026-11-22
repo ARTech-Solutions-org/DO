@@ -27,7 +27,17 @@ export function Camera({ stage, dispatch, onCapture, adapter = browserCamera }: 
   const [message, setMessage] = useState("Waiting for camera permission…");
   const [mirrorView, setMirrorView] = useState(true);
   const [mirrorPhoto, setMirrorPhoto] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const counting = stage === "countdown";
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("settings") === "1" || params.get("dev") === "1") {
+        setShowSettings(true);
+      }
+    }
+  }, []);
 
   const cancel = useCallback(() => {
     if (!shutter.current) return;
@@ -153,7 +163,7 @@ export function Camera({ stage, dispatch, onCapture, adapter = browserCamera }: 
           <PartyButton disabled={!ready} onClick={arm}>CAPTURE</PartyButton>
           <div className={styles.secondary}>
             <button onClick={() => dispatch({ type: "back" })}>← Back</button>
-            <details className={styles.settings}>
+            <details className={styles.settings} data-visible={showSettings ? "true" : undefined}>
               <summary>Camera settings</summary>
               <div className={styles.panel}>
                 {devices.length > 1 && <label>Camera
