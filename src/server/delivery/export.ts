@@ -14,51 +14,100 @@ export type Artifact = {
   sha256: string;
 };
 
-let cachedFrame: Buffer | null = null;
+type FrameInfo = {
+  buffer: Buffer;
+  hash: string;
+  width: number;
+  height: number;
+  cutout: { left: number; top: number; width: number; height: number };
+};
 
-async function getFrameBuffer(): Promise<Buffer | null> {
-  if (cachedFrame) return cachedFrame;
+let cachedFrameInfo: FrameInfo | null = null;
+
+async function loadFrameInfo(): Promise<FrameInfo | null> {
   const candidates = [
     join(process.cwd(), "public", "artwork", "brand", "frame-background.png"),
     join(process.cwd(), "src", "server", "delivery", "frame-background.png"),
     "G:\\Downloads\\Background.png",
   ];
+  let buffer: Buffer | null = null;
   for (const candidate of candidates) {
     try {
       const data = await fs.readFile(candidate);
       if (data && data.length > 0) {
-        cachedFrame = data;
-        return data;
+        buffer = data;
+        break;
       }
     } catch {}
   }
-  return null;
+  if (!buffer) return null;
+
+  const hash = createHash("sha256").update(buffer).digest("hex");
+  if (cachedFrameInfo && cachedFrameInfo.hash === hash) {
+    return cachedFrameInfo;
+  }
+
+  const frameImage = sharp(buffer);
+  const meta = await frameImage.metadata();
+  const width = meta.width || 1024;
+  const height = meta.height || 1535;
+
+  let cutout = { left: 50, top: 216, width: 924, height: 965 };
+  try {
+    const raw = await frameImage.raw().toBuffer({ resolveWithObject: true });
+    let minX = width, maxX = 0, minY = height, maxY = 0;
+    let hasCutout = false;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const alpha = raw.data[(y * width + x) * raw.info.channels + 3];
+        if (alpha < 128) {
+          hasCutout = true;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    if (hasCutout) {
+      const bleed = 4;
+      const left = Math.max(0, minX - bleed);
+      const top = Math.max(0, minY - bleed);
+      const w = (maxX - minX + 1) + bleed * 2;
+      const h = (maxY - minY + 1) + bleed * 2;
+      cutout = { left, top, width: w, height: h };
+    }
+  } catch (err) {
+    console.warn("Cutout detection failed, using fallback:", err);
+  }
+
+  cachedFrameInfo = { buffer, hash, width, height, cutout };
+  return cachedFrameInfo;
 }
 
 export async function composeFramedPortrait(source: Buffer, format: ExportFormat): Promise<Buffer> {
-  const frame = await getFrameBuffer();
-  if (!frame) {
+  const frameInfo = await loadFrameInfo();
+  if (!frameInfo) {
     return format === "png"
       ? source
       : await sharp(source).webp({ lossless: true }).toBuffer();
   }
 
-  // Frame is 1024x1535 with transparent cutout:
-  // x: 53..970 (width 918), y: 219..1177 (height 959).
-  // Scale 1024x1024 source to 924x965 to cover the window with 4px bleed behind frame borders:
+  const { buffer: frame, width, height, cutout } = frameInfo;
+
   const scaledPortrait = await sharp(source)
-    .resize(924, 965, { fit: "cover", position: "center" })
+    .resize(cutout.width, cutout.height, { fit: "cover", position: "center" })
     .toBuffer();
 
   const pipeline = sharp({
     create: {
-      width: 1024,
-      height: 1535,
+      width,
+      height,
       channels: 4,
       background: { r: 11, g: 9, b: 14, alpha: 1 },
     },
   }).composite([
-    { input: scaledPortrait, left: 50, top: 216 },
+    { input: scaledPortrait, left: cutout.left, top: cutout.top },
     { input: frame, left: 0, top: 0 },
   ]);
 
