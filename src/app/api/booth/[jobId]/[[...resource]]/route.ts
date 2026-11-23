@@ -4,7 +4,7 @@ import { after } from "next/server";
 import { deliveryConfig } from "../../../../../server/delivery/config";
 import { photoResponse, privateHeaders, readCapture } from "../../../../../server/delivery/http";
 import { isLoopback, publicQr, secretFor, tokenFor } from "../../../../../server/delivery/links";
-import { uploadToR2 } from "../../../../../server/delivery/r2";
+import { archiveFramedPhoto, uploadToR2 } from "../../../../../server/delivery/r2";
 import { delivery, validOwner } from "../../../../../server/delivery/service";
 import type { GenerationRequest } from "../../../../../server/ports";
 
@@ -74,6 +74,11 @@ async function handle(request: Request, context: Context) {
         const key = `photos/do-hotels-${jobId}.${ext}`;
         r2Url = await uploadToR2({
           key,
+          buffer: photo.bytes,
+          contentType: photo.artifact.contentType,
+        });
+        void archiveFramedPhoto({
+          jobId,
           buffer: photo.bytes,
           contentType: photo.artifact.contentType,
         });

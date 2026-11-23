@@ -5,6 +5,7 @@ import { createCaricatureAdapter } from "../caricature/index.ts";
 import type { GenerationRequest, ImageEditAdapter } from "../ports.ts";
 import type { DeliveryConfig } from "./config.ts";
 import { exportPortrait, type Artifact, type ExportFormat } from "./export.ts";
+import { archiveFramedPhoto } from "./r2.ts";
 import { cleanupExpired, jobPath, join, mkdir, publish, read, readFile, validId } from "./store.ts";
 
 type Claim = {
@@ -143,6 +144,20 @@ export function delivery(config: DeliveryConfig, hooks: {
         at: clock(), stage };
     } finally { stop.abort(); }
     await write(dir, "terminal.json", final);
+    if (final.status === "SUCCEEDED" && !claim.mock) {
+      try {
+        const framedBytes = await readFile(join(dir, final.artifact.filename)).catch(() => null);
+        if (framedBytes) {
+          void archiveFramedPhoto({
+            jobId: claim.id,
+            buffer: framedBytes,
+            contentType: final.artifact.contentType,
+          });
+        }
+      } catch (archiveErr) {
+        console.warn("Background R2 archive failed:", archiveErr);
+      }
+    }
   }
 
   async function recover(job: NonNullable<Awaited<ReturnType<typeof lookup>>>) {
@@ -150,6 +165,20 @@ export function delivery(config: DeliveryConfig, hooks: {
     if (!current.canRecover) return current;
     const artifact = await exporter(job.dir, job.claim.format);
     await write(job.dir, "recovered.json", { status: "SUCCEEDED", at: clock(), artifact });
+    if (!job.claim.mock) {
+      try {
+        const framedBytes = await readFile(join(job.dir, artifact.filename)).catch(() => null);
+        if (framedBytes) {
+          void archiveFramedPhoto({
+            jobId: job.claim.id,
+            buffer: framedBytes,
+            contentType: artifact.contentType,
+          });
+        }
+      } catch (archiveErr) {
+        console.warn("Background R2 archive failed on recover:", archiveErr);
+      }
+    }
     return status(job);
   }
 

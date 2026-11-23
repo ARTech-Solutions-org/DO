@@ -187,3 +187,29 @@ function presignRead(method: "GET" | "HEAD", key: string, expiresInSeconds: numb
 
   return `https://${host}${canonicalUri}?${canonicalQuery}&X-Amz-Signature=${signature}`;
 }
+
+export async function archiveFramedPhoto(params: {
+  jobId: string;
+  buffer: Buffer | Uint8Array;
+  contentType: string;
+  folder?: string;
+}): Promise<string | null> {
+  const ext = params.contentType === "image/webp" ? "webp" : "png";
+  const folder = params.folder || process.env.R2_ARCHIVE_FOLDER || "all-photos";
+  const cleanFolder = folder.replace(/\/+$/, "");
+  const key = `${cleanFolder}/do-hotels-${params.jobId}.${ext}`;
+  try {
+    return await uploadToR2({
+      key,
+      buffer: params.buffer,
+      contentType: params.contentType,
+      headers: {
+        "x-amz-meta-job-id": params.jobId,
+        "x-amz-meta-archived-at": new Date().toISOString(),
+      },
+    });
+  } catch (err) {
+    console.error("R2 archive upload error for job:", params.jobId, err);
+    return null;
+  }
+}
