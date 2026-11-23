@@ -27,6 +27,7 @@ let cachedFrameInfo: FrameInfo | null = null;
 async function loadFrameInfo(): Promise<FrameInfo | null> {
   const candidates = [
     join(process.cwd(), "public", "artwork", "brand", "frame-background.png"),
+    join(process.cwd(), "public", "artwork", "brand", "Background (1).png"),
     join(process.cwd(), "src", "server", "delivery", "frame-background.png"),
     "G:\\Downloads\\Background.png",
   ];

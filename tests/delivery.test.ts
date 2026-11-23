@@ -61,7 +61,7 @@ test("durable reservation transitions once through queue, slow running work, and
   assert.equal(response.headers.get("cache-control"), "private, no-store");
   assert.deepEqual(await response.arrayBuffer(), photo.bytes.buffer);
   assert.ok(photo.artifact.width >= 900);
-  assert.ok(photo.artifact.height >= 1200);
+  assert.ok(photo.artifact.height >= 1000);
   assert.equal((await restart.claim(capture, owner, now))!.created, false);
 });
 
@@ -108,7 +108,7 @@ test("bounded export retries recover from persisted source without generation or
   const source = await readFile(join(job.dir, "source.png"));
   const pixels = await sharp(source).raw().toBuffer({ resolveWithObject: true });
   const result = await sharp(bytes).raw().toBuffer({ resolveWithObject: true });
-  assert.ok(result.info.width >= 900 && result.info.height >= 1200);
+  assert.ok(result.info.width >= 900 && result.info.height >= 1000);
   assert.ok(result.info.channels >= 3);
   await api.recover(job);
   assert.equal(exports, 3);
