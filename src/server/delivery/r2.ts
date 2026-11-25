@@ -213,3 +213,142 @@ export async function archiveFramedPhoto(params: {
     return null;
   }
 }
+
+export interface ArchivedPhotoItem {
+  id: string;
+  key: string;
+  url: string;
+  createdAt: string;
+  size: number;
+  passNumber: string;
+  filename: string;
+}
+
+export async function listArchivedPhotos(options?: {
+  prefix?: string;
+  limit?: number;
+}): Promise<ArchivedPhotoItem[]> {
+  const config = getR2Config();
+  if (!config) return [];
+
+  const { host, bucket, region, accessKeyId, secretAccessKey } = config;
+  const folder = options?.prefix ?? (process.env.R2_ARCHIVE_FOLDER || "all-photos");
+  const cleanFolder = folder.replace(/\/+$/, "") + "/";
+  const limit = Math.min(Math.max(options?.limit ?? 1000, 1), 1000);
+
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
+  const dateStamp = amzDate.slice(0, 8);
+
+  const method = "GET";
+  const canonicalUri = `/${bucket}`;
+  const queryParams: Record<string, string> = {
+    "list-type": "2",
+    "max-keys": limit.toString(),
+    "prefix": cleanFolder,
+  };
+
+  const canonicalQuery = Object.keys(queryParams)
+    .sort()
+    .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(queryParams[k])}`)
+    .join("&");
+
+  const payloadHash = sha256("");
+  const headers: Record<string, string> = {
+    "host": host,
+    "x-amz-content-sha256": payloadHash,
+    "x-amz-date": amzDate,
+  };
+
+  const signedHeaders = Object.keys(headers).sort().join(";");
+  const canonicalHeaders = Object.keys(headers)
+    .sort()
+    .map(k => `${k}:${headers[k]}\n`)
+    .join("");
+
+  const canonicalRequest = [
+    method,
+    canonicalUri,
+    canonicalQuery,
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join("\n");
+
+  const credentialScope = `${dateStamp}/${region}/s3/aws4_request`;
+  const stringToSign = [
+    "AWS4-HMAC-SHA256",
+    amzDate,
+    credentialScope,
+    sha256(canonicalRequest),
+  ].join("\n");
+
+  const signingKey = getSigningKey(secretAccessKey, dateStamp, region, "s3");
+  const signature = createHmac("sha256", signingKey).update(stringToSign).digest("hex");
+  const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  try {
+    const res = await fetch(`https://${host}${canonicalUri}?${canonicalQuery}`, {
+      method,
+      headers: {
+        ...headers,
+        Authorization: authorization,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      console.error(`R2 list failed with status ${res.status} ${res.statusText}`);
+      return [];
+    }
+
+    const xml = await res.text();
+    const contentsRegex = /<Contents>([\s\S]*?)<\/Contents>/g;
+    const items: ArchivedPhotoItem[] = [];
+
+    let match: RegExpExecArray | null;
+    while ((match = contentsRegex.exec(xml)) !== null) {
+      const block = match[1];
+      const keyMatch = block.match(/<Key>(.*?)<\/Key>/);
+      if (!keyMatch) continue;
+      const key = keyMatch[1];
+
+      // Ignore folder placeholder or non-image files
+      if (key === cleanFolder || key.endsWith("/")) continue;
+
+      const lastModifiedMatch = block.match(/<LastModified>(.*?)<\/LastModified>/);
+      const sizeMatch = block.match(/<Size>(\d+)<\/Size>/);
+
+      const lastModified = lastModifiedMatch ? lastModifiedMatch[1] : new Date().toISOString();
+      const size = sizeMatch ? parseInt(sizeMatch[1], 10) : 0;
+
+      const filePart = key.split("/").pop() || "";
+      const idMatch = filePart.match(/do-hotels-([a-f0-9-]+)\.(png|webp|jpg|jpeg)/i);
+      const id = idMatch ? idMatch[1] : filePart;
+      const ext = idMatch ? idMatch[2] : "png";
+      const downloadFilename = `do-hotels-${id}.${ext}`;
+
+      const presignedUrl = getPresignedDownloadUrl(key, 86400, downloadFilename);
+      if (!presignedUrl) continue;
+
+      const shortId = id.length >= 4 ? id.slice(0, 4).toUpperCase() : id.toUpperCase();
+      const passNumber = `#DO-${shortId}`;
+
+      items.push({
+        id,
+        key,
+        url: presignedUrl,
+        createdAt: lastModified,
+        size,
+        passNumber,
+        filename: downloadFilename,
+      });
+    }
+
+    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return items;
+  } catch (err) {
+    console.error("Failed to list archived photos from R2:", err);
+    return [];
+  }
+}

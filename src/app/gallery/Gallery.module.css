@@ -1,0 +1,920 @@
+.galleryContainer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  background: #07060a;
+  color: #faf8ff;
+  font-family: var(--font-interface, system-ui, -apple-system, sans-serif);
+  overflow: hidden;
+  z-index: 10;
+  isolation: isolate;
+}
+
+/* Ambient Backing */
+.ambientBackdrop {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 15% 20%, rgba(195, 74, 255, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(255, 176, 68, 0.08) 0%, transparent 45%),
+    #07060a center / cover no-repeat var(--result-art, url("/artwork/web/result-ground-full.webp"));
+  opacity: 0.95;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Toast Alert */
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(35, 20, 50, 0.95), rgba(20, 15, 30, 0.95));
+  border: 1px solid rgba(195, 74, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(195, 74, 255, 0.35);
+  padding: 10px 24px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  z-index: 100;
+  animation: toastSlideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.toastIcon {
+  color: #ffb044;
+  font-size: 1.1rem;
+}
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Header */
+.header {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px;
+  background: rgba(11, 9, 17, 0.82);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.brandGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.oneBrand, .doBrand {
+  display: flex;
+  align-items: center;
+}
+
+.oneLogo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+}
+
+.brandDivider {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.doLogo {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 12px rgba(195, 74, 255, 0.3));
+}
+
+/* Live Badge */
+.liveBadge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  letter-spacing: 0.06em;
+}
+
+.pulseDot {
+  width: 9px;
+  height: 9px;
+  background: #10b981;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #10b981, 0 0 20px #10b981;
+  animation: liveBreathe 2s ease-in-out infinite;
+}
+
+@keyframes liveBreathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+.dotSpin {
+  background: #c34aff;
+  box-shadow: 0 0 10px #c34aff;
+  animation: spin 0.8s linear infinite !important;
+}
+
+.liveText {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #10b981;
+  text-transform: uppercase;
+}
+
+.countText {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  padding-left: 6px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modeSwitcher {
+  display: flex;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.modeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-button, "Barlow Condensed", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+}
+
+.modeBtn[data-active="true"] {
+  background: linear-gradient(135deg, rgba(195, 74, 255, 0.35), rgba(150, 107, 252, 0.35));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.modeBtn:hover:not([data-active="true"]) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.iconBtn:active {
+  transform: translateY(0);
+}
+
+.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Main Content */
+.mainContent {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Loading State */
+.loadingContainer {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+}
+
+.loaderPulse {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(195, 74, 255, 0.2);
+  border-top-color: #c34aff;
+  border-right-color: #ffb044;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 30px rgba(195, 74, 255, 0.35);
+}
+
+.loadingTitle {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #fff;
+  margin: 0;
+}
+
+.loadingSubtitle {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Empty State */
+.emptyState {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 460px;
+  padding: 40px 24px;
+  position: relative;
+}
+
+.emptyAura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(195, 74, 255, 0.18) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.emptyLogo {
+  width: 140px;
+  height: auto;
+  opacity: 0.6;
+  margin-bottom: 24px;
+}
+
+.emptyTitle {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #fff;
+  margin: 0 0 12px 0;
+}
+
+.emptyDescription {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 24px 0;
+}
+
+.emptyRefreshBtn {
+  background: linear-gradient(135deg, #966bfc, #c34aff);
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(150, 107, 252, 0.4);
+  transition: all 0.2s ease;
+}
+
+.emptyRefreshBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(150, 107, 252, 0.6);
+}
+
+/* ================= GRID SECTION ================= */
+.gridSection {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 32px 48px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(195, 74, 255, 0.3) transparent;
+}
+
+.gridSection::-webkit-scrollbar {
+  width: 6px;
+}
+
+.gridSection::-webkit-scrollbar-thumb {
+  background: rgba(195, 74, 255, 0.3);
+  border-radius: 4px;
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 22px;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.photoCard {
+  background: #14101d;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
+  cursor: pointer;
+  animation: photoCardEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes photoCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.photoCard:hover {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(195, 74, 255, 0.5);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(195, 74, 255, 0.25);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 963 / 1155;
+  background: #0b0911;
+  overflow: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.photoCard:hover .cardImage {
+  transform: scale(1.03);
+}
+
+.cardOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, transparent 40%, rgba(0, 0, 0, 0.75) 100%);
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
+.photoCard:hover .cardOverlay {
+  opacity: 1;
+}
+
+.passBadge {
+  align-self: flex-start;
+  background: rgba(11, 9, 17, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #ffb044;
+}
+
+.cardBottomBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTime {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.cardDownloadBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.cardDownloadBtn:hover {
+  background: #c34aff;
+  border-color: #c34aff;
+  transform: scale(1.1);
+}
+
+/* ================= SLIDESHOW PRESENTATION VIEW ================= */
+.slideshowSection {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 24px;
+}
+
+.slideshowFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 84vh;
+}
+
+.slideshowGlow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(70vw, 75vh);
+  height: min(70vw, 75vh);
+  background: radial-gradient(circle, rgba(195, 74, 255, 0.25) 0%, rgba(255, 176, 68, 0.1) 45%, transparent 70%);
+  filter: blur(48px);
+  pointer-events: none;
+  animation: slideshowAuraBreathe 6s ease-in-out infinite alternate;
+}
+
+@keyframes slideshowAuraBreathe {
+  0% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+.slideHero {
+  position: relative;
+  height: clamp(380px, 68vh, 820px);
+  aspect-ratio: 963 / 1155;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 40px rgba(195, 74, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  animation: slideFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.slideImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #0b0911;
+}
+
+.slideMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  background: rgba(11, 9, 17, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 8px 20px;
+  border-radius: 9999px;
+  z-index: 2;
+}
+
+.slidePass {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #ffb044;
+}
+
+.slideDate {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.slideIndicator {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c34aff;
+  padding-left: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Slideshow Player Bar */
+.slideshowControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  z-index: 2;
+}
+
+.slideNavBtn, .slidePlayBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.slideNavBtn:hover, .slidePlayBtn:hover {
+  background: rgba(195, 74, 255, 0.3);
+  border-color: #c34aff;
+  transform: scale(1.08);
+}
+
+.slideDownloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #966bfc, #c34aff);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-family: var(--font-button, "Barlow Condensed", sans-serif);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 16px rgba(150, 107, 252, 0.4);
+  transition: all 0.2s ease;
+}
+
+.slideDownloadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(150, 107, 252, 0.6);
+}
+
+/* ================= LIGHTBOX MODAL ================= */
+.lightboxBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 4, 8, 0.88);
+  backdrop-filter: blur(24px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.3s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightboxCard {
+  position: relative;
+  background: #120e1a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 40px rgba(195, 74, 255, 0.25);
+  border-radius: 28px;
+  max-width: 1040px;
+  width: 100%;
+  max-height: 90vh;
+  overflow: hidden;
+  animation: modalZoom 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes modalZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.lightboxCloseBtn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  transition: all 0.2s ease;
+}
+
+.lightboxCloseBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: rotate(90deg);
+}
+
+.lightboxArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(11, 9, 17, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 15;
+  transition: all 0.2s ease;
+}
+
+.lightboxArrowPrev { left: 16px; }
+.lightboxArrowNext { right: 16px; }
+
+.lightboxArrow:hover {
+  background: #c34aff;
+  border-color: #c34aff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.lightboxBody {
+  display: flex;
+  height: 100%;
+  max-height: 90vh;
+}
+
+.lightboxImageContainer {
+  flex: 1.2;
+  background: #07050a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-height: 440px;
+}
+
+.lightboxImage {
+  max-width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+}
+
+.lightboxMeta {
+  flex: 0.8;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, #161220 0%, #0e0a15 100%);
+}
+
+.lightboxTag {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #c34aff;
+  text-transform: uppercase;
+}
+
+.lightboxPass {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ffb044;
+  margin: 8px 0 12px 0;
+}
+
+.lightboxTime {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.lightboxActions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 32px 0;
+}
+
+.lightboxDownloadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #966bfc, #c34aff);
+  border: none;
+  color: #fff;
+  padding: 16px 24px;
+  border-radius: 14px;
+  font-family: var(--font-button, "Barlow Condensed", sans-serif);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(150, 107, 252, 0.4);
+  transition: all 0.2s ease;
+}
+
+.lightboxDownloadBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(150, 107, 252, 0.6);
+}
+
+.lightboxShareBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 13px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lightboxShareBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.lightboxBrandFooter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lightboxMiniLogo {
+  height: 22px;
+  width: auto;
+  opacity: 0.7;
+}
+
+.lightboxBrandDot {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+}
+
+.lightboxBrandText {
+  font-family: var(--font-display, "Barlow Condensed", sans-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .header {
+    padding: 12px 18px;
+  }
+  .brandDivider, .liveBadge {
+    display: none;
+  }
+  .lightboxBody {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .lightboxImageContainer {
+    min-height: 320px;
+    padding: 16px;
+  }
+  .lightboxMeta {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 24px 20px;
+  }
+  .lightboxArrow {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .gridSection {
+    padding: 16px 16px 36px;
+  }
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .modeLabel {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulseDot, .slideshowGlow, .loaderPulse, .photoCard {
+    animation: none !important;
+  }
+  .photoCard:hover {
+    transform: none !important;
+  }
+}
